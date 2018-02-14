@@ -28,7 +28,6 @@ try:
     proxy_support = True
 except ImportError:
     pass
-
 import ssl
 import sys
 import threading
@@ -37,6 +36,11 @@ from datetime import datetime
 from datetime import timedelta
 from time import sleep
 import requests
+
+# for debugging only, uncomment the following two lines
+# import httplib
+# httplib.HTTPConnection.debuglevel = 1
+
 import paho.mqtt.client as mqttlib
 
 from device_cloud._core import constants
@@ -50,7 +54,6 @@ if sys.version_info.major == 2:
     import Queue as queue
 else:
     import queue
-
 
 def status_string(error_code):
     """
@@ -514,28 +517,138 @@ class Handler(object):
             timestamp = self.response['attribute_current_timestamp']
         return ret, value, timestamp
 
+    def calc_file_checksum(self, file_name):
+        """
+        Calculate the crc32 checksum on a file and return the string
+        interpretation of it.  Checksum of None means it failed.
+        """
+        sample = 0
+        checksum = None
+        if os.path.exists(file_name):
+            for chunk in open(file_name, "rb"):
+                sample = crc32(chunk, sample)
+            checksum = "%s" % (sample & 0xffffffff)
+        return checksum
 
-    def handle_file_download(self, download):
+    def do_file_get(self, url, validate, file_xfer_obj):
+        """
+        Perform a get on the specified file.  Handle all errors and
+        exceptions and resumuption from where the download left off.
+        """
+        response = None
+
+        # -------------------------------------------------------
+        # Resume download:
+        # -the .part file should exist, but if it doesn't force a
+        # clean download
+        # -for resume, set the Range header for resume
+        # -set the file args to append or overwrite mode
+        # -------------------------------------------------------
+        if file_xfer_obj.resume_download and os.path.exists(file_xfer_obj.download_temp_path):
+            resume_from = os.path.getsize(file_xfer_obj.download_temp_path)
+            hdrs = {'Range':'bytes=%s-' % resume_from}
+            self.logger.info("Resuming download of %s from %d bytes",
+                file_xfer_obj.download_temp_path, resume_from )
+            file_args = "ab"
+        else:
+            hdrs = {}
+            file_args = "wb"
+
+        # ---------------------------------------------------------
+        # Downloading:
+        # -start the download, validate and check use a connectivity
+        # timeout so that we can quickly be notified and retry
+        # -iterate and write chunks to file
+        # -print out progress % but throttle it so that it doesn't
+        # overwhelm the system, e.g. progress % 100 == 0
+        # -crc32 must be added intrementally and compared later
+        # -handle connection and http exceptions
+        # -make sure not to retry on http errors > 400
+        # -throttle printouts
+        # ---------------------------------------------------------
+        response = requests.get(url, stream=True, verify=validate, timeout=3, headers=hdrs)
+        self.logger.debug("HTTP Status %s" % response.status_code)
+        if response.status_code == 200 or response.status_code == 206:
+            count = 0
+            download_len = 0
+            chunk_size = 4096
+            with open(file_xfer_obj.download_temp_path, file_args) as temp_file:
+                try:
+                    for chunk in response.iter_content(chunk_size):
+                        if not chunk:
+                            break
+                        temp_file.write(chunk)
+                        if count % 100 == 0:
+                            download_len = int(os.path.getsize(file_xfer_obj.download_temp_path))
+                            progress = 100 * (float(download_len)/file_xfer_obj.file_size)
+                            self.logger.debug("Download progress %0.2f(%%)",
+                                 float(progress))
+                        count +=1
+                except (Exception) as e:
+                    self.logger.error("Exception: %s",str(e))
+            response.close()
+            temp_file.close()
+
+            # -------------------------------------------------------------
+            # Validation phase:
+            # -if checksums match, move/rename temporary file to real file name
+            # Windows requires the target file to be removed if it
+            # exists
+            # -if the file size is not correct, retry
+            # -if the checksum is not correct, fatal, meaning we
+            # downloaded everything correctly but the file content is not
+            # correct.  No way to recover, just return failure.
+            # -------------------------------------------------------------
+            checksum = self.calc_file_checksum(file_xfer_obj.download_temp_path)
+            self.logger.debug("Checksum calculated=%s, checksum expected %s",
+                checksum, file_xfer_obj.file_checksum)
+            if (file_xfer_obj.file_checksum == None) or (checksum == str(file_xfer_obj.file_checksum)):
+                self.logger.info("Checksum is correct")
+                try:
+                    os.rename(file_xfer_obj.download_temp_path, file_xfer_obj.file_path)
+                except:
+                    os.remove(file_xfer_obj.file_path)
+                    os.rename(file_xfer_obj.download_temp_path, file_xfer_obj.file_path)
+                self.logger.info("Successfully downloaded %s", file_xfer_obj.file_name)
+                status = constants.STATUS_SUCCESS
+            elif download_len != file_xfer_obj.file_size:
+                self.logger.error("Download was interrupted, trying again")
+                status = constants.STATUS_TRY_AGAIN
+            else:
+                self.logger.error("Fatal error: download completed but checksum"
+                   " does not match expected.  Deleting file.")
+                os.remove(file_xfer_obj.download_temp_path)
+                status = constants.STATUS_FAILURE
+
+        elif response.status_code >= 400:
+            self.logger.error("A fatal HTTP error occurred: %s", response.reason)
+            status = constants.STATUS_FAILURE
+        else:
+            self.logger.error("File transfer interrupted.  Trying again.")
+            status = constants.STATUS_TRY_AGAIN
+        return status
+
+    def handle_file_download(self, file_xfer_obj):
         """
         Handle any accepted C2D file transfers
         """
-        #TODO: Timeout
-
+        # -----------------------------------------------------------
+        # File download handler:
+        # -prepare for a file download, create temp file, make sure
+        # all directories exist.
+        # -call do_file_get in a loop unless we get a STATUS_FAILURE,
+        # which means it is fatal.
+        # -----------------------------------------------------------
         status = constants.STATUS_SUCCESS
-        self.logger.info("Downloading \"%s\"", download.file_name)
-
-        # Start creating URL for file download
-        url = "https://{}/file/{}".format(self.config.cloud.host, download.file_id)
-
-        # Download directory
-        download_dir = os.path.dirname(download.file_path)
-
-        # Temporary file name while downloading
+        self.logger.info("Downloading \"%s\"", file_xfer_obj.file_name)
+        self.logger.info("File size \"%d\"", file_xfer_obj.file_size)
+        url = "https://{}/file/{}".format(self.config.cloud.host, file_xfer_obj.file_id)
+        download_dir = os.path.dirname(file_xfer_obj.file_path)
         temp_file_name = "".join([random.choice("0123456789") for _ in range(10)])
         temp_file_name += ".part"
         temp_path = os.path.join(download_dir, temp_file_name)
+        file_xfer_obj.download_temp_path = temp_path
 
-        # Ensure download directory exists
         if not os.path.exists(download_dir):
             try:
                 os.makedirs(download_dir)
@@ -543,64 +656,29 @@ class Handler(object):
                 self.logger.exception(err)
                 status = constants.STATUS_BAD_PARAMETER
         elif not os.path.isdir(download_dir):
-            self.logger.error("Failed to download \"%s\" (destination error)",
-                              download.file_name)
+            self.logger.error("Failed to download %s (destination error)",
+                              file_xfer_obj.file_name)
             status = constants.STATUS_IO_ERROR
 
         if status == constants.STATUS_SUCCESS:
-            # Secure or insecure HTTPS request.
-            response = None
             if (self.config.validate_cloud_cert is False or
-                    not self.config.ca_bundle_file):
-                response = requests.get(url, stream=True, verify=False)
+                    not self.config.ca_bundle_file or
+                    not os.path.isfile(self.config.ca_bundle_file)):
+                validate = False
             else:
-                cert_location = self.config.ca_bundle_file
-                response = requests.get(url, stream=True, verify=cert_location)
+                validate = self.config.validate_cloud_cert
 
-            if response.status_code == 200:
-                # Write to temporary file, while simultaneously calculating
-                # checksum
-                checksum = 0
-                with open(temp_path, "wb") as temp_file:
-                    for chunk in response.iter_content(512):
-                        temp_file.write(chunk)
-                        checksum = crc32(chunk, checksum)
-                checksum &= 0xffffffff
+            # ----------
+            # Retry loop
+            # ----------
+            status = self.do_file_get(url, validate, file_xfer_obj)
+            while (status == constants.STATUS_TRY_AGAIN ):
+                file_xfer_obj.resume_download = True
+                status = self.do_file_get(url, validate, file_xfer_obj)
+                sleep(1)
 
-                # Ensure the downloaded file matches the checksum sent by the
-                # Cloud.
-                if (checksum == download.file_checksum) or (download.file_checksum == None):
-                    # Checksums match, move temporary file to real file position
-                    try:
-                        os.rename(temp_path, download.file_path)
-                    except:
-                        # If file already exists, remove and replace. (Windows users)
-                        os.remove(download.file_path)
-                        os.rename(temp_path, download.file_path)
-                    self.logger.info("Successfully downloaded \"%s\"",
-                                     download.file_name)
-                    status = constants.STATUS_SUCCESS
-                else:
-                    # Checksums do not match, remove temporary file and fail
-                    self.logger.error("Failed to download \"%s\" "
-                                      "(checksums do not match)",
-                                      download.file_name)
-                    os.remove(temp_path)
-                    status = constants.STATUS_FAILURE
-
-            else:
-                # Request was unsuccessful
-                self.logger.error("Failed to download \"%s\" (download error)",
-                                  download.file_name)
-                self.logger.error(".... %s", response.content)
-                status = constants.STATUS_FAILURE
-
-        # Update file transfer status
-        download.status = status
-
-        # Call callback if it exists
-        download.finish()
-
+        file_xfer_obj.status = status
+        file_xfer_obj.finish()
         return status
 
     def handle_file_upload(self, upload):
@@ -716,9 +794,11 @@ class Handler(object):
                     if reply.get("success"):
                         file_id = reply["params"].get("fileId")
                         file_checksum = reply["params"].get("crc32")
+                        file_size = reply["params"].get("fileSize")
                         file_transfer = sent_message.data
                         file_transfer.file_id = file_id
                         file_transfer.file_checksum = file_checksum
+                        file_transfer.file_size = file_size
                         work = defs.Work(constants.WORK_DOWNLOAD, file_transfer)
                         self.queue_work(work)
                     else:

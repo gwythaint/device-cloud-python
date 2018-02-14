@@ -232,6 +232,9 @@ class FileTransfer(object):
         self.file_id = file_id
         self.file_checksum = file_checksum
         self.status = None
+        self.resume_download = False
+        self.file_size = None
+        self.download_temp_path = None
 
     def finish(self):
         """

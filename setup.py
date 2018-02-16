@@ -34,7 +34,7 @@ if pyver < (2,7,9) or (pyver > (3,0,0) and pyver < (3,4,0)):
 
 setup(
     name='device_cloud',
-    version='18.02.01',
+    version='18.02.20',
     description='Python library for Wind River\'s Helix Device Cloud',
     author='Wind River Systems',
     author_email='',
@@ -53,15 +53,14 @@ setup(
                                           'README.macOSX.md',
                                           'README.style.md'])] + addDir("share"),
     install_requires=[
-        'certifi',
-        'paho-mqtt',
-        'PySocks',
-        'queues',
-        'requests',
-        'simplejson',
-        'urllib3',
-        'websocket',
-        'websocket-client'
+        'certifi==2017.11.5',
+        'paho-mqtt==1.3.1',
+        'PySocks==1.6.7',
+        'queues==0.6.3',
+        'requests==2.18.4',
+        'simplejson==3.8.1',
+        'urllib3==1.22',
+        'websocket-client==0.44.0'
         ],
     maintainer='Paul Barrette',
     maintainer_email='paul.barrette@windriver.com',

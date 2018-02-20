@@ -1353,7 +1353,10 @@ class OTAExecute(unittest.TestCase):
         result = self.ota._execute(test_cmd)
 
         assert result == device_cloud.STATUS_SUCCESS
-        mock_system.assert_called_once_with(test_cmd)
+
+        # Note: ota_handler.py captures stdout to a file, strip that off
+        ota_log = ">> ota_install.log 2>&1"
+        mock_system.assert_called_once_with(test_cmd + ota_log)
 
 class OTAExecuteBadCommand(unittest.TestCase):
     @mock.patch("os.path.isdir")
@@ -1366,7 +1369,10 @@ class OTAExecuteBadCommand(unittest.TestCase):
         result = self.ota._execute(test_cmd)
 
         assert result == device_cloud.STATUS_EXECUTION_ERROR
-        mock_system.assert_called_once_with(test_cmd)
+
+        # Note: ota_handler.py captures stdout to a file, strip that off
+        ota_log = ">> ota_install.log 2>&1"
+        mock_system.assert_called_once_with(test_cmd + ota_log)
 
 class OTAExecuteNoCommand(unittest.TestCase):
     @mock.patch("os.path.isdir")
@@ -1393,7 +1399,10 @@ class OTAExecuteBadWorkingDir(unittest.TestCase):
         result = self.ota._execute(test_cmd, ".....not_a_real_dir.....")
 
         assert result == device_cloud.STATUS_SUCCESS
-        mock_system.assert_called_once_with(test_cmd)
+
+        # Note: ota_handler.py captures stdout to a file, strip that off
+        ota_log = ">> ota_install.log 2>&1"
+        mock_system.assert_called_once_with(test_cmd + ota_log)
 
 class OTAExecuteWorkingDir(unittest.TestCase):
     @mock.patch("os.path.isdir")

@@ -24,7 +24,7 @@ import shutil
 import tarfile
 import threading
 import zipfile
-
+from datetime import datetime
 from device_cloud import osal
 import device_cloud as iot
 
@@ -41,6 +41,7 @@ ALARM_FAILED = 6
 # General Constants
 OTA_LOCKFILE = ".otalock"
 OTA_PACKAGEDIR = "otapackage"
+OTA_STDOUT_LOG = "ota_install.log"
 
 class OTAHandler(object):
     """
@@ -109,6 +110,11 @@ class OTAHandler(object):
         client.action_progress_update(request.request_id, "Started OTA Update")
 
         package_dir = os.path.join(self._runtime_dir, OTA_PACKAGEDIR)
+
+        # Cleanup last ota artifacts
+        if os.path.isdir(package_dir):
+            client.log(iot.LOGINFO,"Clean up previous update artifacts...")
+            shutil.rmtree(package_dir)
 
         if params:
             error_notified = False
@@ -248,12 +254,10 @@ class OTAHandler(object):
         client.action_acknowledge(request.request_id,
                                   status, status_string)
 
-        # Cleanup
-        if os.path.isdir(package_dir):
-            shutil.rmtree(package_dir)
 
         file_name = os.path.join(self._runtime_dir, "download", package_name)
         if os.path.isfile(file_name):
+            client.log(iot.LOGWARNING,"removing file name %s" % file_name)
             os.remove(file_name)
 
         # Unlock the updater
@@ -265,6 +269,14 @@ class OTAHandler(object):
 
         client.log(iot.LOGINFO, \
             "Update finished with status {}".format(iot.status_string(status)))
+
+        stdout_log = os.path.abspath( os.path.join(package_dir, OTA_STDOUT_LOG) )
+        client.log(iot.LOGINFO, "Logging stdout to file {}".format( stdout_log))
+        if os.path.isfile(stdout_log):
+            ts = datetime.utcnow().strftime("%Y-%m-%d-%S")
+            output_file = "ota_install-{}.log".format(ts)
+            client.file_upload(stdout_log, upload_name=output_file,
+                                blocking=True, timeout=60, file_global=False),
 
         # Reboot if requested
         if update_data and 'reboot' in update_data and \
@@ -366,6 +378,10 @@ class OTAHandler(object):
         specified, the command is modified to use this directory.
         """
         if command:
+            # redirection to a log file is valid on windows and unix
+            # like systems
+            log_append = ">> {}".format(OTA_STDOUT_LOG)
+            redir_output = "2>&1"
             if working_dir and os.path.isdir(working_dir):
                 if osal.WIN32:
                     cmd_sep = " &"
@@ -373,8 +389,8 @@ class OTAHandler(object):
                     cmd_sep = ";"
 
                 command = "cd {}{} {}".format(working_dir, cmd_sep, command)
-
-            result = os.system(command)
+            cmd = "{}{} {}".format(command, log_append, redir_output)
+            result = os.system(cmd)
             if result:
                 status = iot.STATUS_EXECUTION_ERROR
             else:

@@ -6,7 +6,5 @@
 # err_install.sh script will be invoked.
 # ---------------------------------------------------------------------
 echo "install running...."
-echo "sleep 1 second"
 ping -c 1 google.ca
-sleep 1
 exit 0

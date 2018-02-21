@@ -17,6 +17,7 @@ This module handles all the underlying functionality of the Client
 
 import json
 import logging
+import logging.handlers
 import os
 import random
 import socket
@@ -92,7 +93,11 @@ class Handler(object):
         log_formatter = logging.Formatter(constants.LOG_FORMAT,
                                           datefmt=constants.LOG_TIME_FORMAT)
         if not self.config.quiet:
-            log_handler = logging.StreamHandler()
+            if self.config.use_syslog:
+                print ("Logging to syslog...")
+                log_handler = logging.handlers.SysLogHandler(address = '/dev/log')
+            else:
+                log_handler = logging.StreamHandler()
             log_handler.setFormatter(log_formatter)
             self.logger.addHandler(log_handler)
 

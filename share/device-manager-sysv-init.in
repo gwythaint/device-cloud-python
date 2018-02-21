@@ -12,7 +12,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=device_manager.py
 DAEMON_INTERPRETER=python
 DAEMON_CMD="${DAEMON_INTERPRETER} /usr/bin/${NAME}"
-DAEMON_OPTS="--log_to_file --delay_start=10"
+DAEMON_OPTS="--log_to_syslog"
 DESC="Device manager"
 PIDFILE=/var/run/device-manager.pid
 USER=%user%

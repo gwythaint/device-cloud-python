@@ -45,7 +45,7 @@ class Client(object):
         warning(message)
     """
 
-    def __init__(self, app_id, kwargs=None):
+    def __init__(self, app_id, kwargs=None, offline=False):
         """
         Start configuration of client. Configuration file location and name can
         be updated after this if necessary. MUST be followed by
@@ -64,6 +64,10 @@ class Client(object):
 
         # Setup default config structure and file location
         self.config = defs.Config()
+
+        self.offline = offline
+        if self.offline:
+            print("Warning: running in offline mode")
 
         default_config = {
             "app_id":app_id,
@@ -197,10 +201,12 @@ class Client(object):
                                        request
         """
 
-        return self.handler.action_acknowledge(request_id,
+        ret = None
+        if not self.offline:
+            ret = self.handler.action_acknowledge(request_id,
                                                error_code,
                                                error_message)
-
+        return ret
 
     def action_progress_update(self, request_id, message):
         """
@@ -217,8 +223,10 @@ class Client(object):
           STATUS_FAILURE               Failed to update progress of action
                                        request
         """
-
-        return self.handler.action_progress_update(request_id, message)
+        ret = None
+        if not self.offline:
+            ret = self.handler.action_progress_update(request_id, message)
+        return ret
 
 
     def action_deregister(self, action_name):
@@ -288,10 +296,13 @@ class Client(object):
           STATUS_SUCCESS               Alarm has been queued for publishing
         """
 
-        alarm = defs.PublishAlarm(alarm_name, state, message)
-        self.handler.queue_publish(alarm)
-        work = defs.Work(WORK_PUBLISH, None)
-        return self.handler.queue_work(work)
+        ret = None
+        if not self.offline:
+            alarm = defs.PublishAlarm(alarm_name, state, message)
+            self.handler.queue_publish(alarm)
+            work = defs.Work(WORK_PUBLISH, None)
+            ret =  self.handler.queue_work(work)
+        return ret
 
     def attribute_publish(self, attribute_name, value):
         """
@@ -377,9 +388,11 @@ class Client(object):
         Returns:
           STATUS_SUCCESS               Event has been queued for publishing
         """
-
-        log = defs.PublishLog(message)
-        return self.handler.queue_publish(log)
+        ret = None
+        if not self.offline:
+            log = defs.PublishLog(message)
+            ret = self.handler.queue_publish(log)
+        return ret
 
     def file_download(self, file_name, download_dest, blocking=False,
                       callback=None, timeout=0, file_global=False):
@@ -442,16 +455,19 @@ class Client(object):
           STATUS_TIMED_OUT             Wait for file transfer timed out. File
                                        transfer is still in progress.
         """
-        if os.path.isdir(file_path):
-            result = []
-            for fn in os.listdir(file_path):
-                result.append(self.handler.request_upload((file_path+os.sep+fn), fn, blocking,
-                                           callback, timeout, file_global))
-            if not result:
-                return STATUS_NOT_FOUND
-            return max(result)
-        return self.handler.request_upload(file_path, upload_name, blocking,
-                                           callback, timeout, file_global)
+        ret = None
+        if not self.offline:
+            if os.path.isdir(file_path):
+                result = []
+                for fn in os.listdir(file_path):
+                    result.append(self.handler.request_upload((file_path+os.sep+fn), fn, blocking,
+                                               callback, timeout, file_global))
+                if not result:
+                    return STATUS_NOT_FOUND
+                return max(result)
+            ret = self.handler.request_upload(file_path, upload_name, blocking,
+                                              callback, timeout, file_global)
+        return ret
 
     def is_alive(self):
         """

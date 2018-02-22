@@ -49,6 +49,8 @@ class OTAHandler(object):
     """
     _runtime_dir = '.'
     _update_thread = None
+    def __init__(self, offline=False):
+        self.offline = offline
 
     ## Public Methods ##
     def is_running(self):
@@ -127,7 +129,7 @@ class OTAHandler(object):
             status = self._package_download(client, package_name, download_timeout)
 
             # 2. Unzip Package
-            if status == iot.STATUS_SUCCESS:
+            if status == iot.STATUS_SUCCESS or self.offline:
                 client.log(iot.LOGINFO, "Download Phase Done!")
                 client.event_publish("OTA: Download Successful!")
 
@@ -297,21 +299,22 @@ class OTAHandler(object):
             if not os.path.isdir(out_dir):
                 os.makedirs(out_dir)
 
-            out_file = os.path.join(self._runtime_dir, "download", file_name)
-            if os.path.isfile(out_file):
-                os.remove(out_file)
+            if not self.offline:
+                out_file = os.path.join(self._runtime_dir, "download", file_name)
+                if os.path.isfile(out_file):
+                    os.remove(out_file)
 
-            for attempts in range(20):
-                if file_name:
-                    status = client.file_download(file_name, out_file, \
-                                              blocking=True, timeout=timeout, \
-                                              file_global=True)
-                    if status == iot.STATUS_NOT_FOUND:
+                for attempts in range(20):
+                    if file_name:
                         status = client.file_download(file_name, out_file, \
                                                   blocking=True, timeout=timeout, \
-                                                  file_global=False)
-                    if status == iot.STATUS_SUCCESS:
-                        break
+                                                  file_global=True)
+                        if status == iot.STATUS_NOT_FOUND:
+                            status = client.file_download(file_name, out_file, \
+                                                      blocking=True, timeout=timeout, \
+                                                      file_global=False)
+                        if status == iot.STATUS_SUCCESS:
+                            break
 
         else:
             status = iot.STATUS_BAD_PARAMETER

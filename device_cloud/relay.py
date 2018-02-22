@@ -24,6 +24,13 @@ import socket
 import ssl
 import threading
 
+# -------------------------------------------------------------------
+# Note: when using a proxy server, the socket class is overlayed with
+# pysocks class.  Keep around a local copy so that local socket
+# connections don't use the proxy
+# -------------------------------------------------------------------
+non_proxy_socket = None
+
 # yocto supports websockets, not websocket, so check for that
 try:
     import websocket
@@ -40,7 +47,7 @@ class Relay(object):
     """
 
     def __init__(self, wsock_host, sock_host, sock_port, secure=True,
-                 log=None):
+                 log=None, local_socket=None):
         """
         Initialize a relay object for piping data between a websocket and a
         local socket
@@ -99,7 +106,13 @@ class Relay(object):
                             # and we have received the connection string, start
                             # local socket.
                             try:
-                                self.lsock = socket.socket(socket.AF_INET,
+                                # check for proxy.  If not proxy, this
+                                # is None.
+                                if non_proxy_socket:
+                                    self.lsock = non_proxy_socket(socket.AF_INET,
+                                                           socket.SOCK_STREAM)
+                                else:
+                                    self.lsock = socket.socket(socket.AF_INET,
                                                            socket.SOCK_STREAM)
                                 self.lsock.connect((self.sock_host,
                                                     self.sock_port))
@@ -183,9 +196,10 @@ class Relay(object):
 
 relays = []
 
-def create_relay(url, host, port, secure=True, log_func=None):
-    global relays
+def create_relay(url, host, port, secure=True, log_func=None, local_socket=None):
+    global relays, non_proxy_socket
 
+    non_proxy_socket = local_socket
     newrelay = Relay(url, host, port, secure=secure, log=log_func)
     newrelay.start()
     relays.append(newrelay)

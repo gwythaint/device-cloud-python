@@ -426,11 +426,11 @@ def quit_me():
     running = False
     return (iot.STATUS_SUCCESS, "")
 
-def check_listening_port(host, port):
+def check_listening_port(client, host, port):
     result = False
     check = False
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = client.handler.original_socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(2)
         check = sock.connect( (host, port) )
         print("Port %d listening" % port)
@@ -451,13 +451,14 @@ def remote_access(client, params):
     host = params["host"]
     protocol = int(params["protocol"])
 
-    if not check_listening_port(host, protocol):
+    if not check_listening_port(client, host, protocol):
         return (iot.STATUS_FAILURE, "Error: port (%d) not listening" % protocol)
 
     secure = client.config.validate_cloud_cert is not False
     try:
         relay.create_relay(url, host, protocol, secure=secure,
-                           log_func=client.log)
+                           log_func=client.log,
+                           local_socket=client.handler.original_socket)
         return (iot.STATUS_SUCCESS, "")
     except Exception as error:
         client.error(str(error))

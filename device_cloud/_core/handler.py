@@ -119,7 +119,10 @@ class Handler(object):
         self.logger.debug("CONFIG:\n%s", self.config)
 
         # Ensure the paho socket pair is not using proxy sockets
+        # Save the original socket so that class members can use it,
+        # e.g. remote login etc.
         socket.socket = original_socket
+        self.original_socket = original_socket
 
         # Set up MQTT client
         if self.config.cloud.port == 443:

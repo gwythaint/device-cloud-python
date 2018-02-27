@@ -34,7 +34,6 @@ import argparse
 import tarfile
 import socket
 from datetime import datetime
-
 from device_cloud import osal
 from device_cloud import ota_handler
 from device_cloud import relay
@@ -524,6 +523,7 @@ if __name__ == "__main__":
     upload_dir = os.path.join(runtime_dir, "upload")
     download_dir = os.path.join(runtime_dir, "download")
 
+
     try:
         if not os.path.isdir(runtime_dir):
             os.mkdir(runtime_dir)
@@ -597,6 +597,11 @@ if __name__ == "__main__":
         except (OSError, IOError) as err:
             error = str(err)
             print(error+". This file blocks OTA operations. Please remove it.")
+
+    # update the friendly name of the device
+    if hasattr(config, "thing_friendly_name"):
+        if config.thing_friendly_name != "None":
+            client.update_thing_details(name=config.thing_friendly_name)
 
     while running and client.is_alive():
 

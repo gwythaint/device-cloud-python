@@ -2431,3 +2431,144 @@ class ClientConnectMissingPort(unittest.TestCase):
     def setUp(self):
         # Configuration to be 'read' from config file
         self.config_args = helpers.config_file_default()
+
+class ClientThingUpdate(unittest.TestCase):
+    @mock.patch(builtin + ".open")
+    @mock.patch("os.path.exists")
+    @mock.patch("time.sleep")
+    @mock.patch("paho.mqtt.client.Client")
+    def runTest(self, mock_mqtt, mock_sleep, mock_exists, mock_open ):
+        # Set up mocks
+        mock_exists.side_effect = [True, True, True]
+        read_strings = [json.dumps(self.config_args), helpers.uuid]
+        mock_read = mock_open.return_value.__enter__.return_value.read
+        mock_read.side_effect = read_strings
+        mock_mqtt.return_value = helpers.init_mock_mqtt()
+
+        # Initialize client
+        kwargs = {"loop_time":1, "thread_count":0}
+        self.client = device_cloud.Client("testing-client", kwargs)
+        self.client.initialize()
+
+        self.client.handler.send = mock.Mock()
+
+        # error test
+        self.client.handler.send.return_value = device_cloud.STATUS_FAILURE
+        result = self.client.update_thing_details(name="Update Thing Name")
+        assert result != device_cloud.STATUS_SUCCESS
+        self.client.handler.send.assert_called_once()
+
+        # success test
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # =================================================================
+        # parameter checks, test each param for success
+        # =================================================================
+        # 2 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 3 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 4 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 5 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 6 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 7 params
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid",
+                                imsi="my imsi")
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 7 + empty list params
+        unset = []
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid",
+                                imsi="my imsi",
+                                unset_fields=unset)
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # 7 + populated list params
+        unset = ['name','description','iccid', 'esn','imei','meid','imsi']
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid",
+                                imsi="my imsi",
+                                unset_fields=unset)
+        assert result == device_cloud.STATUS_SUCCESS
+
+        # negative tests: bad list type: scalar
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid",
+                                imsi="my imsi",
+                                unset_fields="foo")
+        assert result == device_cloud.STATUS_PARSE_ERROR
+
+        # negative tests: bad list type: dict
+        unset = {'key':'value'}
+
+        self.client.handler.send.return_value = device_cloud.STATUS_SUCCESS
+        result = self.client.update_thing_details(name="Update Thing Name",
+                                description="this is a thing desription",
+                                iccid="my iccid",
+                                esn="my esn",
+                                imei="my imei",
+                                meid="my meid",
+                                imsi="my imsi",
+                                unset_fields=unset)
+        assert result == device_cloud.STATUS_PARSE_ERROR
+
+    def setUp(self):
+        # Configuration to be 'read' from config file
+        self.config_args = helpers.config_file_default()

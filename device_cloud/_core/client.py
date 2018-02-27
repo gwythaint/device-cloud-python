@@ -563,3 +563,27 @@ class Client(object):
         """
 
         return self.handler.handle_attribute_get(attribute_name)
+
+    def update_thing_details(self, name=None, description=None,
+                             iccid=None, esn=None, imei=None, meid=None,
+                             imsi=None, unset_fields=[]):
+        """
+        Update a things description.  All fields are optional, if none
+        are specified, then the action is a noop.
+
+        Parameters:
+            name              (string) Friendly name.
+            description       (string) Description of thing.
+            iccid             (string) ICCID
+            esn               (string) ESN
+            imei              (string) IMEI
+            meid              (string) MEID
+            imsi              (string) IMSI
+            unset_fields      (list) List of field names above to unset.
+
+        Returns:
+            STATUS_SUCCESS
+        """
+
+        return self.handler.handle_update_thing_details(name, description,
+                                    iccid, esn, imei, meid, imsi, unset_fields)

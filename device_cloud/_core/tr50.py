@@ -66,6 +66,7 @@ class TR50Command(object):
     property_publish = "property.publish"
     property_current = "property.current"
     thing_find = "thing.find"
+    thing_update = "thing.update"
 
 
 def _generate_params(kwargs):
@@ -323,6 +324,28 @@ def create_thing_find(key):
         "key":key
     }
     cmd = {"command":TR50Command.thing_find}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_thing_update(key, name, description, iccid, esn, imei,
+                        meid, imsi, unset=[]):
+    """
+    Generate a TR50 JSON request for updating a thing.
+    """
+    kwargs = {
+        "key":key,
+        "name":name,
+        "desc":description,
+        "iccid":iccid,
+        "esn":esn,
+        "imei":imei,
+        "meid":meid,
+        "imsi":imsi
+    }
+    if isinstance(unset, list):
+       if len(unset) > 0:
+           kwargs["unset"] = unset
+    cmd = {"command":TR50Command.thing_update}
     cmd["params"] = _generate_params(kwargs)
     return cmd
 

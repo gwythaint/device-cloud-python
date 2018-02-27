@@ -1011,6 +1011,39 @@ class Handler(object):
         status = self.send(message)
         return constants.STATUS_SUCCESS
 
+    def handle_update_thing_details(self, name=None, description=None,
+                            iccid=None, esn=None, imei=None, meid=None,
+                            imsi=None, unset_fields=[]):
+        """
+        Request to update a things definition.  The thing key must be
+        immutable.  Friendly name and other non connectivity tracking
+        keys can be changed, e.g. name, description, ICCID, ESN, IMEI,
+        IMSI.
+        """
+        # if any of the default values are None, unset them in the
+        # thing update. Support unsetting members in the thing
+        # description.  Maybe remove the unsupported tunnel
+        # fields from the thing description TBD.
+        unset = []
+        list_test = True
+        if isinstance(unset_fields, list):
+            print("unset_fields is a list of %d items" % len(unset_fields))
+            if len(unset_fields) > 0:
+                for v in unset_fields:
+                    unset.append(v)
+        else:
+            list_test = False
+            status = constants.STATUS_PARSE_ERROR
+
+        if list_test:
+            command = tr50.create_thing_update(self.config.key, name,
+                            description, iccid, esn, imei, meid, imsi,
+                            unset)
+            message_desc = "Update Thing Details"
+            message = defs.OutMessage(command, message_desc)
+            status = self.send(message)
+        return status
+
     def handle_time(self):
         """
         Request time from the cloud

@@ -256,7 +256,6 @@ class OTAHandler(object):
         client.action_acknowledge(request.request_id,
                                   status, status_string)
 
-
         file_name = os.path.join(self._runtime_dir, "download", package_name)
         if os.path.isfile(file_name):
             client.log(iot.LOGWARNING,"removing file name %s" % file_name)
@@ -271,10 +270,22 @@ class OTAHandler(object):
 
         client.log(iot.LOGINFO, \
             "Update finished with status {}".format(iot.status_string(status)))
-
         stdout_log = os.path.abspath( os.path.join(package_dir, OTA_STDOUT_LOG) )
         client.log(iot.LOGINFO, "Logging stdout to file {}".format( stdout_log))
+
+        # print the stdout log to the client log
+        # upload the stdout log to cloud
         if os.path.isfile(stdout_log):
+            client.log(iot.LOGINFO,"OTA STDOUT log dump start")
+            with open(stdout_log) as fh:
+                while True:
+                    line = fh.readline()
+                    if line == "":
+                        break
+                    else:
+                        client.log(iot.LOGINFO,"{}".format(line.rstrip()))
+            client.log(iot.LOGINFO,"OTA STDOUT log dump complete.")
+            
             ts = datetime.utcnow().strftime("%Y-%m-%d-%S")
             output_file = "ota_install-{}.log".format(ts)
             client.file_upload(stdout_log, upload_name=output_file,

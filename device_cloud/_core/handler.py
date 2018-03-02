@@ -917,7 +917,8 @@ class Handler(object):
                     command = tr50.create_alarm_publish(self.config.key,
                                                         pub.name, pub.state,
                                                         message=pub.message,
-                                                        timestamp=pub.timestamp)
+                                                        timestamp=pub.timestamp,
+                                                        republish=pub.republish)
                     message_desc = "Alarm Publish {}".format(pub.name)
                     message_desc += " : {}".format(pub.state)
                     message = defs.OutMessage(command, message_desc)

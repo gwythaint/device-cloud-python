@@ -283,7 +283,7 @@ class Client(object):
 
         return self.handler.action_register_command(action_name, command)
 
-    def alarm_publish(self, alarm_name, state, message=None):
+    def alarm_publish(self, alarm_name, state, message=None, republish=False):
         """
         Publish an alarm to the Cloud
 
@@ -298,7 +298,7 @@ class Client(object):
 
         ret = None
         if not self.offline:
-            alarm = defs.PublishAlarm(alarm_name, state, message)
+            alarm = defs.PublishAlarm(alarm_name, state, message, republish)
             self.handler.queue_publish(alarm)
             work = defs.Work(WORK_PUBLISH, None)
             ret =  self.handler.queue_work(work)

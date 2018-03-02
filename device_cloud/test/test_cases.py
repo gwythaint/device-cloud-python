@@ -252,6 +252,22 @@ class ClientAlarmPublish(unittest.TestCase):
         self.client.initialize()
 
         # Queue alarm for publishing
+        # specify republish=False
+        result = self.client.alarm_publish("alarm_key", 4,
+                                           message="alarm message",
+                                           republish=False)
+        assert result == device_cloud.STATUS_SUCCESS
+        pub = self.client.handler.publish_queue.get()
+        assert isinstance(pub, device_cloud._core.defs.PublishAlarm)
+        assert pub.name == "alarm_key"
+        assert pub.state == 4
+        assert pub.message == "alarm message"
+        assert pub.republish == False
+        work = self.client.handler.work_queue.get()
+        assert work.type == device_cloud._core.constants.WORK_PUBLISH
+
+        # Queue alarm for publishing
+        # do not specify republish, use default value
         result = self.client.alarm_publish("alarm_key", 5,
                                            message="alarm message")
         assert result == device_cloud.STATUS_SUCCESS
@@ -260,6 +276,22 @@ class ClientAlarmPublish(unittest.TestCase):
         assert pub.name == "alarm_key"
         assert pub.state == 5
         assert pub.message == "alarm message"
+        assert pub.republish == False
+        work = self.client.handler.work_queue.get()
+        assert work.type == device_cloud._core.constants.WORK_PUBLISH
+
+        # Queue alarm for publishing
+        # default republish=True
+        result = self.client.alarm_publish("alarm_key", 6,
+                                           message="alarm message",
+                                           republish=True)
+        assert result == device_cloud.STATUS_SUCCESS
+        pub = self.client.handler.publish_queue.get()
+        assert isinstance(pub, device_cloud._core.defs.PublishAlarm)
+        assert pub.name == "alarm_key"
+        assert pub.state == 6
+        assert pub.message == "alarm message"
+        assert pub.republish == True
         work = self.client.handler.work_queue.get()
         assert work.type == device_cloud._core.constants.WORK_PUBLISH
 

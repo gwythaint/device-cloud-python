@@ -336,11 +336,12 @@ class PublishAlarm(Publish):
     Holds information about an alarm
     """
 
-    def __init__(self, name, state, message=None):
+    def __init__(self, name, state, message=None, republish=False):
         super(PublishAlarm, self).__init__()
         self.name = name
         self.state = state
         self.message = message
+        self.republish = republish
 
 
 class PublishAttribute(Publish):

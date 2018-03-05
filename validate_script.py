@@ -38,6 +38,7 @@ import uuid
 
 from datetime import datetime
 
+from device_cloud._core import constants
 if sys.version_info.major == 2:
     input = raw_input
 
@@ -70,25 +71,14 @@ def _send(data, session_id=None):
     return {"success":False, "content":r.content,"status_code":r.status_code}
 
 
-def get_alarm(session_id, thing_key, alarm_name):
+def get_alarms(session_id, thing_key, alarm_name, ts):
     """
     Retrieve the last value of a sent alarm
     """
 
-    data_params = {"thingKey":thing_key,"key":alarm_name}
-    data = {"cmd":{"command":"alarm.current","params":data_params}}
+    data_params = {"thingKey":thing_key,"key":alarm_name,"start":ts}
+    data = {"cmd":{"command":"alarm.history","params":data_params}}
     return _send(data, session_id)
-
-
-def get_app(session_id, name):
-    """
-    Retreive a list of applications and their tokens
-    """
-
-    data_params = {"name":name}
-    data = {"cmd":{"command":"app.find", "params":data_params}}
-    return _send(data, session_id)
-
 
 def get_attribute(session_id, thing_key, attr_name):
     """
@@ -376,6 +366,8 @@ def main():
         username = input("Username: ")
     if not password:
         password = getpass.getpass("Password: ")
+    if not token:
+        token = input("App Token:")
     if not org:
         org = input("Org Key(Optional): ")
 
@@ -401,24 +393,6 @@ def main():
             error_quit("Failed to switch org.")
         else:
             print("Org ID after switch=%s" % get_org_id(session_id, username))
-
-
-    # Look for the app token created for this validation test.
-    # This token is looked for by name, so as long as the cloud has a validation
-    # app set up, the token does not need to be retrieved manually.
-    # if HDCAPPTOKEN was in the env use it.  Otherwise, query it.
-    if not token:
-        validateapps = []
-        app_info = get_app(session_id, default_app_name)
-        #print(json.dumps(app_info, indent=2, sort_keys=True))
-        if app_info.get("success") is True:
-            app_list = app_info.get("params")
-            token = app_list["token"]
-            print("Token: {} - OK".format(token))
-        else:
-            error_quit("Either app does not exist or user does not have\n"
-                       "permission to query the token.\n"
-                       " * Please export HDCAPPTOKEN=<app token> and run again")
 
     # Generate config for app with retrieved token
     generate = subprocess.Popen(pycommand+" generate_config.py -f validate.cfg "
@@ -451,6 +425,10 @@ def main():
     print("Deleting thing key {} for this test".format(thing_key))
     thing_info = delete_thing(session_id, thing_key)
     #print(json.dumps(thing_info, indent=2, sort_keys=True))
+
+    # get the time stamp to pass in to the alarm request
+    ts = datetime.utcnow()
+    time_stamp = ts.strftime(constants.TIME_FORMAT)
     time.sleep(2)
 
     # Start app
@@ -522,6 +500,38 @@ def main():
         else:
             print("Attribute not found in Cloud - FAIL")
             fails.append("Attribute retrieval")
+
+    # ---------------------------------------------------------------
+    # Process the alarms:
+    # the validate_app publishes 5 alarms, make sure they all come
+    # back
+    # ---------------------------------------------------------------
+    count = 0
+    count_exp = 5
+    done = False
+    for i in range(10):
+        alarm_info = get_alarms(session_id, thing_key, "test_alarm", time_stamp)
+        #print(json.dumps(alarm_info, indent=2, sort_keys=True))
+        if alarm_info.get("success") is True:
+            if alarm_info:
+                for item in alarm_info['params']['values']:
+                    msg = item.get("msg")
+                    state = item.get("state")
+                    print ("alarm details = name test_alarm, state {}, msg {}".format(msg, state))
+                    count += 1
+                if count == count_exp:
+                    print("Retrieved all alarms {}".format(count))
+                    break
+                else:
+                    print ("Not all alarms retrieved, trying again {}".format(count))
+                    count = 0
+        else:
+            print("Alarms not found in Cloud - FAIL")
+            fails.append("Alarms retrieval")
+        time.sleep(1)
+    if count != count_exp:
+        print("Alarm count not correct")
+        fails.append("Alarms retrieval")
 
     # Check that the expected location was published to the Cloud
     loc = None
@@ -654,5 +664,3 @@ if __name__ == "__main__":
         for fail in fails:
             print(fail)
         sys.exit(1)
-
-

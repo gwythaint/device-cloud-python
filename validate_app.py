@@ -46,6 +46,13 @@ def sighandler(signum, frame):
         print("Received SIGINT, stopping application...")
         running = False
 
+def quit_app():
+    """
+    Quits application (callback)
+    """
+    global running
+    running = False
+    return 0
 
 def pass_action(client, params, user_data):
     if params and params["param"] == "value":
@@ -80,6 +87,7 @@ if __name__ == "__main__":
 
     client.initialize()
 
+    client.action_register_callback("quit_app", quit_app)
     client.action_register_callback("pass_action", pass_action)
     client.action_register_callback("fail_action", fail_action)
     client.action_register_callback("file_download", file_download)
@@ -94,7 +102,13 @@ if __name__ == "__main__":
     client.location_publish(45.351603, -75.918713, heading=12.34, altitude=1.0,
                             speed=2.0, accuracy=3.0, fix_type="crystal ball")
     client.event_publish("logs and such")
-    client.alarm_publish("alarm", 1, "very serious alarm")
+
+    # publish a bunch of these with the republish flag
+    client.alarm_publish("test_alarm", 1, "very serious alarm", republish=True)
+    client.alarm_publish("test_alarm", 1, "very serious alarm", republish=True)
+    client.alarm_publish("test_alarm", 1, "very serious alarm", republish=True)
+    client.alarm_publish("test_alarm", 1, "very serious alarm", republish=True)
+    client.alarm_publish("test_alarm", 1, "very serious alarm", republish=True)
 
     client.file_upload(os.path.abspath(__file__), upload_name="validate_upload.txt",
                        blocking=True, timeout=30)

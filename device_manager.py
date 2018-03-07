@@ -451,6 +451,7 @@ def remote_access(client, params):
     protocol = int(params["protocol"])
 
     if not check_listening_port(client, host, protocol):
+        client.event_publish("Error: local port {} not listening".format(protocol))
         return (iot.STATUS_FAILURE, "Error: port (%d) not listening" % protocol)
 
     secure = client.config.validate_cloud_cert is not False
@@ -590,6 +591,30 @@ if __name__ == "__main__":
 
     # Publish system details
     publish_platform_info(client, default_cfg_dir)
+
+    # -------------------------------------------------------
+    # Need to create a json object to publish e.g.:
+    # {"remote_access_support": [{"VNC":"5900"}, {"HTTP":"80"}]}
+    # If the remote access list is empty, do not publish the
+    # attribute.
+    # -------------------------------------------------------
+    rem_acc_key = 'remote_access_support'
+    rem_acc_attr = {}
+    rem_acc_proto_list = []
+    rem_acc_count = 0
+    for i in config.remote_access_support:
+        if i.status:
+            d = {}
+            for k,v in i._asdict().iteritems():
+                if k != "status":
+                    d[k] = v 
+            rem_acc_proto_list.append(d)
+            rem_acc_attr[rem_acc_key] = rem_acc_proto_list
+            rem_acc_count += 1
+    if rem_acc_count:
+        remote_access_attribute = json.dumps(rem_acc_attr[rem_acc_key])
+        client.log(iot.LOGINFO, "Remote access support attribute: {}".format(remote_access_attribute))
+        client.attribute_publish(rem_acc_key, remote_access_attribute)
 
     if os.path.isfile(os.path.join(runtime_dir, ".otalock")):
         try:

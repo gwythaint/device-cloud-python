@@ -9,3 +9,4 @@ runtime/
 build/
 *.swp
 *.swo
+iot-connect.cfg

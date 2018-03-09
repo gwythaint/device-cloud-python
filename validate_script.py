@@ -336,19 +336,8 @@ def main():
     global fails
     fails = []
 
-    # travis sets an env, use it for a unique think key that will not
-    # be impacted by someone running the script manually.
-    # Note: use default_device_id with the default device id.  If the device_id
-    # file does not exist, use the default.
-    default_device_id = ""
-    default_device_id = os.environ.get("AUTO_PREFIX")
-    if default_device_id:
-        py_ver = platform.python_version()
-        default_device_id += py_ver.replace(".","")
-    else:
-        # if there is no AUTO_PREFIX generate a default id
-        # this will only be used if there is no device_id file
-        default_device_id = str(uuid.uuid4())
+    # pregenerate the device ID and clean up at the end.
+    default_device_id = str(uuid.uuid4())
 
     if not os.path.isfile(app_file):
         error_quit("Could not find app file {}.".format(app_file))
@@ -422,9 +411,6 @@ def main():
         device_id = default_device_id
         thing_key = device_id + "-iot-validate-app"
 
-    print("Deleting thing key {} for this test".format(thing_key))
-    thing_info = delete_thing(session_id, thing_key)
-    #print(json.dumps(thing_info, indent=2, sort_keys=True))
 
     # get the time stamp to pass in to the alarm request
     ts = datetime.utcnow()
@@ -447,7 +433,7 @@ def main():
             thing = thing_info.get("params")
             connected = thing.get("connected")
             break
-        time.sleep(1)
+        time.sleep(2)
 
     if connected is True:
        print("Connected - OK")
@@ -482,7 +468,7 @@ def main():
     attr = None
     for i in range(10):
         attr_info = get_attribute(session_id, thing_key, "attribute")
-        #print(json.dumps(attr_info, indent=2, sort_keys=True))
+        print(json.dumps(attr_info, indent=2, sort_keys=True))
         if attr_info.get("success") is True:
             attr = attr_info.get("params")
         if attr:
@@ -500,6 +486,7 @@ def main():
         else:
             print("Attribute not found in Cloud - FAIL")
             fails.append("Attribute retrieval")
+        time.sleep(2)
 
     # ---------------------------------------------------------------
     # Process the alarms:
@@ -528,7 +515,7 @@ def main():
         else:
             print("Alarms not found in Cloud - FAIL")
             fails.append("Alarms retrieval")
-        time.sleep(1)
+        time.sleep(2)
     if count != count_exp:
         print("Alarm count not correct")
         fails.append("Alarms retrieval")
@@ -647,6 +634,11 @@ def main():
     rest_exec_download(session_id, thing_key)
 
     stop_app(validate_app)
+
+    print("Deleting thing key {} for this test".format(thing_key))
+    thing_info = delete_thing(session_id, thing_key)
+    #print(json.dumps(thing_info, indent=2, sort_keys=True))
+
     return fails
 
 if __name__ == "__main__":

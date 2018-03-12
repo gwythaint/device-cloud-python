@@ -441,8 +441,8 @@ def publish_platform_info(client, attr_file_dir=default_cfg_dir, attr_file_name=
                 client.log(iot.LOGERROR, "Cannot set hdc_version")
             else:
                 client.attribute_publish(key, value)
-    except:
-        pass
+    except ValueError:
+        print("Error: decoding JSON in {} failed".format(attr_file_name))
 
 def quit_me():
     """

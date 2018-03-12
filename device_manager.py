@@ -310,7 +310,7 @@ def file_upload(client, params, user_data):
             if result == iot.STATUS_SUCCESS:
                 message = ""
                 # If upload_tar_file, delete tar file that was created
-                if tarfile_name:
+                if tarfile_name and blocking:
                     os.remove(tarfile_name)
 
                 # Clean up files.  If the file_path has /upload/ in
@@ -361,6 +361,9 @@ def file_upload_dir(user_data, file_path, file_name):
             file_name = (file_path+".tar").replace("\\", "-")[3:]
         else:
             file_name = (file_path+".tar").replace("/", "-")[1:]
+        # if the tar file exists, remove it
+        if os.path.exists((file_path+os.sep+file_name)):
+            os.remove((file_path+os.sep+file_name))
         with tarfile.open((file_path+os.sep+file_name), "w") as tar:
             for fn in os.listdir(file_path):
                 tar.add((file_path+os.sep+fn), arcname=fn)

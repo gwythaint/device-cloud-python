@@ -264,24 +264,39 @@ def file_upload(client, params, user_data):
     file_name = None
     file_path = None
     result = None
+    tarfile_name = None
+
+    # config parameters that are passed up
+    runtime_dir = user_data[0]
+    rm_on_success = user_data[1]
+    upload_format_is_tar = user_data[2]
     blocking = user_data[3]
+
     if params:
         file_name = params.get("file_name")
         file_path = params.get("file_path")
 
         if file_name and not file_path:
-            file_path = abspath(os.path.join(user_data[0], "upload", file_name))
+            file_path = abspath(os.path.join(runtime_dir, "upload", file_name))
         if file_path and not file_name:
             file_name = os.path.basename(file_path)
         if file_path and os.path.isdir(file_path):
             file_path, file_name = file_upload_dir(user_data, file_path, file_name)
+
+            # when uploading a dir, we tar it off first.  Track the
+            # name so that we can delete it.
+            tarfile_name = file_path
         if not file_name and not file_path:
             file_path, file_name = file_upload_dir(user_data, file_path, file_name)
+
+            # when uploading a dir, we tar it off first.  Track the
+            # name so that we can delete it.
+            tarfile_name = file_path
         if file_path.startswith('~'):
             result = iot.STATUS_BAD_PARAMETER
             message = "Paths cannot use '~' to reference a home directory"
         elif not os.path.isabs(file_path):
-            file_path = abspath(os.path.join(user_data[0], "upload",
+            file_path = abspath(os.path.join(runtime_dir, "upload",
                                              file_path))
 
         file_global = params.get("use_global_store", False)
@@ -295,21 +310,27 @@ def file_upload(client, params, user_data):
             if result == iot.STATUS_SUCCESS:
                 message = ""
                 # If upload_tar_file, delete tar file that was created
-                if user_data[2]:
-                    os.remove(file_path)
-                if user_data[1] and "upload" in file_path:
+                if tarfile_name:
+                    os.remove(tarfile_name)
+
+                # Clean up files.  If the file_path has /upload/ in
+                # it, clean up if requested
+                if os.sep + "upload" + os.sep in file_path:
                     try:
                         # If upload_tar_file, delete associated files
-                        if user_data[2]:
+                        if upload_format_is_tar:
                             base = os.path.dirname(file_path)
                             for fn in os.listdir(base):
-                                os.remove(base+os.sep+fn)
+                                if rm_on_success:
+                                    os.remove(base+os.sep+fn)
                         # If all of runtime_dir/upload uploaded, delete all files
                         elif file_name == "upload":
                             for fn in os.listdir(file_path):
-                                os.remove(file_path+os.sep+fn)
+                                if rm_on_success:
+                                    os.remove(file_path+os.sep+fn)
                         else:
-                            os.remove(file_path)
+                            if rm_on_success:
+                                os.remove(file_path)
 
                     except (OSError, IOError) as err:
                         error = str(err)
@@ -327,12 +348,15 @@ def file_upload_dir(user_data, file_path, file_name):
     Return upload file_path and file_name for when they are not specified
     (i.e. upload entire runtime directory) or the file_path is a directory. 
     """
+    runtime_dir = user_data[0]
+    upload_format_is_tar = user_data[2]
+
     if not file_path:
-        file_path = abspath(os.path.join(user_data[0], "upload"))
+        file_path = abspath(os.path.join(runtime_dir, "upload"))
     if not file_name:
         file_name = os.path.basename(file_path)
     # If upload_tar_file, create tar file
-    if user_data[2]:
+    if upload_format_is_tar:
         if sys.platform.startswith("win"):
             file_name = (file_path+".tar").replace("\\", "-")[3:]
         else:

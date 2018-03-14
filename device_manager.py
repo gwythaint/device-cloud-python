@@ -39,6 +39,9 @@ from device_cloud import ota_handler
 from device_cloud import relay
 import device_cloud as iot
 
+# dict.iteritems is not py3 compat.
+from six import iteritems
+
 running = True
 
 # whether to reset with systemd or not
@@ -634,7 +637,7 @@ if __name__ == "__main__":
     for i in config.remote_access_support:
         if i.status:
             d = {}
-            for k,v in i._asdict().iteritems():
+            for k,v in iteritems(i._asdict()):
                 if k != "status":
                     d[k] = v 
             rem_acc_proto_list.append(d)

@@ -141,7 +141,6 @@ def get_session(username, password):
     data = {"auth":{"command":"api.authenticate","params":data_params}}
     return _send(data)
 
-
 def get_thing(session_id, thing_key):
     """
     Get information about a specific thing
@@ -214,7 +213,7 @@ def check_for_match(haystack, needle):
     found = False
     for x in range(len(haystack)):
         if needle in haystack[x]['msg']:
-            print("Log: \"{}\" - OK".format(haystack[x]['msg']))
+            print("[VS] Log: \"{}\" - OK".format(haystack[x]['msg']))
             found = True
     return found
 
@@ -227,9 +226,9 @@ def rest_exec_upload(session_id, thing_key):
     upload_stat = method_exec(session_id, thing_key, "file_upload",
                               {"file_name":"validate_exec.txt"})
     if upload_stat.get("success") is True:
-        print("upload success: True - OK")
+        print("[VS] upload success: True - OK")
     else:
-        print("upload failed to complete successfully - FAIL")
+        print("[VS] upload failed to complete successfully - FAIL")
 
     # Check that a file was successfully uploaded to the Cloud
     while tries > 0 and loop_done == False:
@@ -246,14 +245,14 @@ def rest_exec_upload(session_id, thing_key):
                 # there may be more than one file returned
                 for file in files_info["params"]["result"]:
                     if file["fileName"]  == "validate_exec.txt":
-                        print("-->File uploaded with method_exec: validate_exec.txt - OK")
+                        print("[VS] -->File uploaded with method_exec: validate_exec.txt - OK")
                         loop_done = True
 
             # check for the file
             upload_stat = method_exec(session_id, thing_key, "file_upload",
                                       {"file_name":"validate_exec.txt"})
     if tries == 0:
-        print("method_exec failied for upload - FAIL")
+        print("[VS] method_exec failied for upload - FAIL")
         fails.append("method_exec upload")
 
 def rest_exec_download(session_id, thing_key):
@@ -263,9 +262,9 @@ def rest_exec_download(session_id, thing_key):
     download_stat = method_exec(session_id, thing_key, "file_download",
                                 {"file_name":"validate_exec.txt"})
     if download_stat.get("success") is True:
-        print("upload success: True - OK")
+        print("[VS] upload success: True - OK")
     else:
-        print("upload failed to complete successfully - FAIL")
+        print("[VS] upload failed to complete successfully - FAIL")
 
     # Check that a file was successfully downloaded from the Cloud
     tries = 10
@@ -276,7 +275,7 @@ def rest_exec_download(session_id, thing_key):
         if download_stat.get("success") == True:
             loop_done = False
             if os.path.isfile(os.path.abspath("validate_exec.txt")):
-                print("File downloaded with method_exec: validate_exec.txt - OK")
+                print("[VS] File downloaded with method_exec: validate_exec.txt - OK")
                 os.remove(os.path.abspath("validate_exec.txt"))
                 loop_done = True
                 break
@@ -285,7 +284,7 @@ def rest_exec_download(session_id, thing_key):
                 download_stat = method_exec(session_id, thing_key, "file_download",
                                             {"file_name":"validate_exec.txt"})
                 if tries == 0:
-                    print("method_exec was successful, but file not found - FAIL")
+                    print("[VS] method_exec was successful, but file not found - FAIL")
                     fails.append("Finding file on device (method_exec)")
                     break
             if loop_done == True:
@@ -294,7 +293,7 @@ def rest_exec_download(session_id, thing_key):
             download_stat = method_exec(session_id, thing_key, "file_download",
                                         {"file_name":"validate_exec.txt"})
             if tries == 0:
-                print("method_exec failied for download - FAIL")
+                print("[VS] method_exec failied for download - FAIL")
                 fails.append("method_exec download")
 
 def get_org_id(session_id, username):
@@ -318,7 +317,7 @@ def change_session_org(session_id, org):
     Change org
     """
     ret = False
-    print("Changing org to %s" % org)
+    print("[VS] Changing org to %s" % org)
     data_params = {"key":org}
     data = {"cmd":{"command":"session.org.switch","params":data_params}}
     result = _send(data, session_id)
@@ -357,13 +356,13 @@ def main():
         password = getpass.getpass("Password: ")
     if not token:
         token = input("App Token:")
-    if not org:
-        org = input("Org Key(Optional): ")
+    #if not org:
+        #org = input("Org Key(Optional): ")
 
     # Ensure Cloud address is formatted correctly for later use
     cloud = cloud.split("://")[-1]
     cloud = cloud.split("/")[0]
-    print("Cloud: {}".format(cloud))
+    print("[VS] Cloud: {}".format(cloud))
 
     # Start a session with the Cloud
     session_id = ""
@@ -371,17 +370,17 @@ def main():
     if session_info.get("success") is True:
         session_id = session_info["params"].get("sessionId")
     if session_id:
-        print("Session ID: {} - OK".format(session_id))
+        print("[VS] Session ID: {} - OK".format(session_id))
     else:
         error_quit("Failed to get session id.")
 
     # now handle a switch org if needed
     if org:
-        print("Org ID before switch=%s" % get_org_id(session_id, username))
+        print("[VS] Org ID before switch=%s" % get_org_id(session_id, username))
         if change_session_org(session_id, org) == False:
             error_quit("Failed to switch org.")
         else:
-            print("Org ID after switch=%s" % get_org_id(session_id, username))
+            print("[VS] Org ID after switch=%s" % get_org_id(session_id, username))
 
     # Generate config for app with retrieved token
     generate = subprocess.Popen(pycommand+" generate_config.py -f validate.cfg "
@@ -401,7 +400,7 @@ def main():
     # the cloud.  Subsequent code will use the device_id.  This test
     # would normally be run in a docker instance with a new device_id each time.
     if os.path.isfile("device_id"):
-        print("file device_id exists, using it")
+        print("[VS] file device_id exists, using it")
         with open("device_id", "r") as did_file:
             device_id = did_file.read().strip()
         thing_key = device_id + "-iot-validate-app"
@@ -423,22 +422,23 @@ def main():
                                     stdout=subprocess.PIPE)
 
     # Check to make sure thing is connected in Cloud
-    thing = None
-    connected = False
-    print("Checking thing key %s for connection" % thing_key)
-    for i in range(10):
-        thing_info = get_thing(session_id, thing_key)
-        #print(json.dumps(thing_info, indent=2, sort_keys=True))
-        if thing_info.get("success") is True:
-            thing = thing_info.get("params")
-            connected = thing.get("connected")
+    # when the app is ready it will download a file
+    # "validate_download.txt". Check for that file and know that we
+    # are connected
+    tries = 50
+    while tries > 0:
+        tries -= 1
+        time.sleep(0.5)
+        if os.path.exists("validate_download.txt"):
+            print("[VS] File uploaded: validate_upload.txt - OK")
             break
-        time.sleep(2)
+        if tries < 0:
+            tries = 0
+            break
 
-    if connected is True:
-       print("Connected - OK")
-    else:
-       error_quit("Thing not connected - FAIL", validate_app)
+    if tries == 0:
+        print("[VS] App not connected, unable to find validate_download.txt file- FAIL")
+        error_quit("Thing not connected - FAIL", validate_app)
 
     # Check that the expected property value was published to the Cloud
     prop = None
@@ -451,17 +451,17 @@ def main():
                if (strtotime(prop["ts"]) > start_time and
                    strtotime(prop["ts"]) < datetime.utcnow()):
                    if prop["value"] == 12.34:
-                       print("Property: {} - OK".format(prop["value"]))
+                       print("[VS] Property: {} - OK".format(prop["value"]))
                        break
                    else:
-                       print("Wrong property value: {} != 12.34 "
+                       print("[VS] Wrong property value: {} != 12.34 "
                         "- FAIL".format(prop["value"]))
                        fails.append("Property value")
                else:
-                   print("Property timestamp out of range of application - FAIL")
+                   print("[VS] Property timestamp out of range of application - FAIL")
                    fails.append("Property time")
            else:
-               print("Property not found in Cloud - FAIL")
+               print("[VS] Property not found in Cloud - FAIL")
                fails.append("Property retrieval")
 
     # Check that the expected attribute value was published to the Cloud
@@ -475,16 +475,16 @@ def main():
             if (strtotime(attr["ts"]) > start_time and
                     strtotime(attr["ts"]) < datetime.utcnow()):
                 if attr["value"] == "text and such":
-                    print("Attribute: \"{}\" - OK".format(attr["value"]))
+                    print("[VS] Attribute: \"{}\" - OK".format(attr["value"]))
                     break
                 else:
-                    print("Wrong attribute value: {} != \"text and such\" - FAIL".format(attr["value"]))
+                    print("[VS] Wrong attribute value: {} != \"text and such\" - FAIL".format(attr["value"]))
                     fails.append("Attribute value")
             else:
-                print("Attribute timestamp out of range of application - FAIL")
+                print("[VS] Attribute timestamp out of range of application - FAIL")
                 fails.append("Attribute time")
         else:
-            print("Attribute not found in Cloud - FAIL")
+            print("[VS] Attribute not found in Cloud - FAIL")
             fails.append("Attribute retrieval")
         time.sleep(2)
 
@@ -507,17 +507,17 @@ def main():
                     print ("alarm details = name test_alarm, state {}, msg {}".format(msg, state))
                     count += 1
                 if count == count_exp:
-                    print("Retrieved all alarms {}".format(count))
+                    print("[VS] Retrieved all alarms {}".format(count))
                     break
                 else:
                     print ("Not all alarms retrieved, trying again {}".format(count))
                     count = 0
         else:
-            print("Alarms not found in Cloud - FAIL")
+            print("[VS] Alarms not found in Cloud - FAIL")
             fails.append("Alarms retrieval")
         time.sleep(2)
     if count != count_exp:
-        print("Alarm count not correct")
+        print("[VS] Alarm count not correct")
         fails.append("Alarms retrieval")
 
     # Check that the expected location was published to the Cloud
@@ -544,13 +544,13 @@ def main():
             if loc["fixType"] != "crystal ball":
                 errors.append("fix_type: {} != \"crystal ball\"".format(loc["fixType"]))
             if errors:
-                print("Wrong location: {} - FAIL".format(", ".join(errors)))
+                print("[VS] Wrong location: {} - FAIL".format(", ".join(errors)))
                 fails.append("Location")
             else:
-                print("Location: lat:{}, lng:{}, etc... - OK".format(loc["lat"], loc["lng"]))
+                print("[VS] Location: lat:{}, lng:{}, etc... - OK".format(loc["lat"], loc["lng"]))
                 break
         else:
-            print("Location not found in Cloud - FAIL")
+            print("[VS] Location not found in Cloud - FAIL")
             fails.append("Location retrieval")
 
     # Check that the expected log was published to the Cloud. 
@@ -566,7 +566,7 @@ def main():
         time.sleep(1)
 
     if found == False:
-        print("No logs for this thing in the specified time frame - FAIL")
+        print("[VS] No logs for this thing in the specified time frame - FAIL")
         fails.append("Log retrieval")
 
     # Check that the pass action executes and returns successfully
@@ -574,9 +574,9 @@ def main():
                                 {"param":"value"})
     #print(json.dumps(pass_act_info, indent=2, sort_keys=True))
     if pass_act_info.get("success") is True:
-        print("Pass action success: True - OK")
+        print("[VS] Pass action success: True - OK")
     else:
-        print("Pass action failed to complete successfully - FAIL")
+        print("[VS] Pass action failed to complete successfully - FAIL")
         fails.append("Action successful execution")
 
     # Check that the fail action executes and returns a failure successfully
@@ -585,13 +585,13 @@ def main():
     if fail_act_info.get("success") is False:
         errmsgs = fail_act_info.get("errorMessages")
         if len(errmsgs) == 1 and errmsgs[0] == "fail and such":
-            print("Fail action error message: \"fail and such\" - OK")
+            print("[VS] Fail action error message: \"fail and such\" - OK")
         else:
-            print("Fail action error message: \"{}\" != \"fail and such\" - "
+            print("[VS] Fail action error message: \"{}\" != \"fail and such\" - "
                   "FAIL".format(errmsgs[0]))
             fails.append("Action error message")
     else:
-        print("Fail action did not return failure - FAIL")
+        print("[VS] Fail action did not return failure - FAIL")
         fails.append("Action failure")
 
     # Check that a file was successfully uploaded to the Cloud
@@ -606,14 +606,14 @@ def main():
             file_results = files_info["params"]["result"]
             for file in file_results:
                 if file["fileName"]  == "validate_upload.txt":
-                    print("File uploaded: validate_upload.txt - OK")
+                    print("[VS] File uploaded: validate_upload.txt - OK")
                     loop_done = True
                     break
             if loop_done == True:
                 break
         else:
             if tries == 0:
-                print("File list could not be retrieved - FAIL")
+                print("[VS] File list could not be retrieved - FAIL")
                 fails.append("File list retrieval")
 
     # Check that a file was successfully downloaded from the Cloud
@@ -622,12 +622,12 @@ def main():
         tries -= 1
         time.sleep(0.5)
         if os.path.isfile(os.path.abspath("validate_download.txt")):
-            print("File downloaded: validate_download.txt - OK")
+            print("[VS] File downloaded: validate_download.txt - OK")
             os.remove(os.path.abspath("validate_download.txt"))
             break
         else:
             if tries == 0:
-                print("Could not find downloaded file - FAIL")
+                print("[VS] Could not find downloaded file - FAIL")
                 fails.append("Download file")
 
     rest_exec_upload(session_id, thing_key)
@@ -635,7 +635,7 @@ def main():
 
     stop_app(validate_app)
 
-    print("Deleting thing key {} for this test".format(thing_key))
+    print("[VS] Deleting thing key {} for this test".format(thing_key))
     thing_info = delete_thing(session_id, thing_key)
     #print(json.dumps(thing_info, indent=2, sort_keys=True))
 
@@ -649,10 +649,10 @@ if __name__ == "__main__":
         stop_app(validate_app)
         raise(error)
     if not fails:
-        print("\n\nAll passed! Success.")
+        print("[VS] \n\nAll passed! Success.")
         sys.exit(0)
     else:
-        print("\n\nFailed on the following:")
+        print("[VS] \n\nFailed on the following:")
         for fail in fails:
             print(fail)
         sys.exit(1)

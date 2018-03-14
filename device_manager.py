@@ -431,18 +431,20 @@ def publish_platform_info(client, attr_file_dir=default_cfg_dir, attr_file_name=
     client.attribute_publish("hdc_version", hdc_version)
     client.attribute_publish("mac_address", get_adapter_mac())
 
-    try:
-        with open(os.path.join(attr_file_dir, attr_file_name), 'r') as attr_file:
-            attribute_data = json.load(attr_file)
-        attr_list = attribute_data["publish_attribute"]
-
-        for key, value in attr_list.items():
-            if key == "hdc_version":
-                client.log(iot.LOGERROR, "Cannot set hdc_version")
-            else:
-                client.attribute_publish(key, value)
-    except ValueError:
-        print("Error: decoding JSON in {} failed".format(attr_file_name))
+    attr_path = os.path.join(attr_file_dir, attr_file_name)
+    if os.path.exists(attr_path):
+        try:
+            with open(attr_path, 'r') as attr_file:
+                attribute_data = json.load(attr_file)
+                attr_list = attribute_data["publish_attribute"]
+                for key, value in attr_list.items():
+                    if key == "hdc_version":
+                        client.log(iot.LOGERROR, "Cannot set hdc_version")
+                    else:
+                        client.attribute_publish(key, value)
+        except (IOError, ValueError) as error:
+            print("Error: while processing {}".format(attr_path))
+            print("Error: {}".format(str(error)))
 
 def quit_me():
     """

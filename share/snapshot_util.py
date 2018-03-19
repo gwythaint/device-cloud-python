@@ -343,7 +343,7 @@ if __name__ == "__main__":
             sys.exit(ERROR) 
 
     if clear == True:
-        files = [ IOT_ROLLBACK_FLAG, IOT_TRIGGER_TIMER_FLAG ]
+        files = [ IOT_ROLLBACK_FLAG, IOT_TRIGGER_TIMER_FLAG, IOT_ROLLBACK_MARKER ]
         for f in files:
             if os.path.isfile(f):
                 try:

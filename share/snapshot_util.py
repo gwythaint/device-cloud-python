@@ -238,10 +238,10 @@ def start_watchdog():
     print("INFO: iot-watchdog is to start to monitor agent ...\n")
 
     # make sure there are no existing watchdogs running
-    exec_cmd("sudo /usr/bin/pkill -9 watchdog >& /dev/null")
+    exec_cmd("sudo systemctl stop iot-watchdog >& /dev/null")
 
     # start the watchdog
-    cmd = 'sudo /usr/sbin/watchdog -f -c /etc/python-device-cloud/iot-watchdog.conf'
+    cmd = 'sudo systemctl start iot-watchdog'
     ret, out, err = exec_cmd(cmd)
     if ret:
         print("ERROR: %s failed \n" % cmd)

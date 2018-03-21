@@ -626,27 +626,29 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------
     # Need to create a json object to publish e.g.:
-    # {"remote_access_support": [{"VNC":"5900"}, {"HTTP":"80"}]}
-    # If the remote access list is empty, do not publish the
-    # attribute.
+    # {"remote_access_support": [{"VNC":"5900"}, {"HTTP":"80"}]} Check
+    # to see if the configured service is listening.  If so, add it to
+    # the list. If the remote access list is empty, unset the
+    # attribute
     # -------------------------------------------------------
     rem_acc_key = 'remote_access_support'
     rem_acc_attr = {}
     rem_acc_proto_list = []
     rem_acc_count = 0
     for i in config.remote_access_support:
-        if i.status:
-            d = {}
-            for k,v in iteritems(i._asdict()):
-                if k != "status":
-                    d[k] = v 
-            rem_acc_proto_list.append(d)
-            rem_acc_attr[rem_acc_key] = rem_acc_proto_list
-            rem_acc_count += 1
+        d = {}
+        for k,v in iteritems(i._asdict()):
+            if check_listening_port(client, "localhost", int(i.port) ):
+                d[k] = v
+                rem_acc_proto_list.append(d)
+                rem_acc_attr[rem_acc_key] = rem_acc_proto_list
+                rem_acc_count += 1
     if rem_acc_count:
         remote_access_attribute = json.dumps(rem_acc_attr[rem_acc_key])
         client.log(iot.LOGINFO, "Remote access support attribute: {}".format(remote_access_attribute))
         client.attribute_publish(rem_acc_key, remote_access_attribute)
+    else:
+        client.attribute_publish(rem_acc_key, None )
 
     if os.path.isfile(os.path.join(runtime_dir, ".otalock")):
         try:

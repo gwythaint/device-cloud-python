@@ -148,7 +148,7 @@ if [ -e ${WRA_TRIGGER_TIMER_FLAG} ] ; then
 			echo "Snapshot not available, cannot rollback."
 			# stop watchdog
 			clear_bootonce_in_FAT
-			sudo pkill -9 watchdog
+			sudo systemctl stop iot-watchdog
 			exit 0
 		fi
 
@@ -197,7 +197,7 @@ else
 	clear_bootonce_in_FAT
 
 	# stop watchdog
-	sudo pkill -9 watchdog
+	sudo systemctl stop iot-watchdog
 	
 fi
 exit 0

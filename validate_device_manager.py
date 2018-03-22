@@ -464,7 +464,7 @@ def main():
     # all are found, the device manager is up.
     # Validate that the expected attribute value was published to the Cloud
     # ----------------------------------------------------------------
-    attr_list = ["hdc_version", "hostname", "kernel", "mac_address", "os_name", "os_version"]
+    attr_list = ["hdc_version", "hostname", "kernel", "mac_address", "os_name", "os_version", "remote_access_support"]
     if not get_attributes_from_cloud(session_id, thing_key, attr_list):
         print("[VS] Error: failed to retrieve attributes")
         fails.append("Alarms retrieval")

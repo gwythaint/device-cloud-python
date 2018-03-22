@@ -638,17 +638,18 @@ if __name__ == "__main__":
     for i in config.remote_access_support:
         d = {}
         for k,v in iteritems(i._asdict()):
-            if check_listening_port(client, "localhost", int(i.port) ):
-                d[k] = v
-                rem_acc_proto_list.append(d)
-                rem_acc_attr[rem_acc_key] = rem_acc_proto_list
-                rem_acc_count += 1
+            d[k] = v
+            if 'port' in k:
+                if check_listening_port(client, "localhost", int(i.port) ):
+                    rem_acc_proto_list.append(d)
+                    rem_acc_attr[rem_acc_key] = rem_acc_proto_list
+                    rem_acc_count += 1
     if rem_acc_count:
         remote_access_attribute = json.dumps(rem_acc_attr[rem_acc_key])
         client.log(iot.LOGINFO, "Remote access support attribute: {}".format(remote_access_attribute))
         client.attribute_publish(rem_acc_key, remote_access_attribute)
     else:
-        client.attribute_publish(rem_acc_key, None )
+        client.attribute_publish(rem_acc_key, "")
 
     if os.path.isfile(os.path.join(runtime_dir, ".otalock")):
         try:

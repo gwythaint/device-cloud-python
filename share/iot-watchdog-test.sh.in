@@ -64,6 +64,10 @@ function clear_bootonce_in_FAT(){
 		if [ -e ${temp_dir}/idp-initramfs-bootonce.img ]; then
 			rm -f ${temp_dir}/idp-initramfs-bootonce.img
 		fi
+		if [ -e ${temp_dir}/EFI/BOOT/BOOTIA32.conf ]; then
+			 sed -i 's/default 1/default 0/' ${temp_dir}/EFI/BOOT/BOOTIA32.conf
+		fi
+		sync
 		sudo umount $temp_dir
 		rm -rf $temp_dir
 	fi

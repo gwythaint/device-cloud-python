@@ -476,11 +476,26 @@ def remote_access(client, params):
     """
     Start relay which will attempt to connect to a Cloud service and a local
     service and securely tunnel information between the two. Used primarily for
-    Telnet.
+    Telnet.  Parameters:
+        url:
+            long URL containing all the details to talk to the micro
+            service.
+        host:
+            default is localhost
+        protocol port:
+            values defined in iot.cfg
+        reconnect:
+            Optional.  The default is false.  Some services disconnect
+            after some time.  reconnect=True will reconnect the local
+            socket if it drops.  E.g. http drops the socket after a
+            connect.
     """
     url = params["url"]
     host = params["host"]
     protocol = int(params["protocol"])
+    reconnect = False
+    if params["reconnect"]:
+        reconnect = True
 
     if not check_listening_port(client, host, protocol):
         client.event_publish("Error: local port {} not listening".format(protocol))
@@ -490,7 +505,8 @@ def remote_access(client, params):
     try:
         relay.create_relay(url, host, protocol, secure=secure,
                            log_func=client.log,
-                           local_socket=client.handler.original_socket)
+                           local_socket=client.handler.original_socket,
+                           reconnect=reconnect)
         return (iot.STATUS_SUCCESS, "")
     except Exception as error:
         client.error(str(error))

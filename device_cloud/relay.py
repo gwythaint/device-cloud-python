@@ -23,7 +23,7 @@ import select
 import socket
 import ssl
 import threading
-
+import time
 # -------------------------------------------------------------------
 # Note: when using a proxy server, the socket class is overlayed with
 # pysocks class.  Keep around a local copy so that local socket
@@ -47,7 +47,7 @@ class Relay(object):
     """
 
     def __init__(self, wsock_host, sock_host, sock_port, secure=True,
-                 log=None, local_socket=None):
+                 log=None, local_socket=None, reconnect=False):
         """
         Initialize a relay object for piping data between a websocket and a
         local socket
@@ -61,6 +61,7 @@ class Relay(object):
         self.log_name = "Relay:{}:{}({:0>5})".format(self.sock_host,
                                                     self.sock_port,
                                                     random.randint(0,99999))
+        self.reconnect = reconnect
 
         if self.log is None:
             self.logger = logging.getLogger(self.log_name)
@@ -83,6 +84,27 @@ class Relay(object):
         connection will be started when a specific string is received from the
         Cloud
         """
+        def _connect_local(self):
+            ret = False
+            try:
+                # check for proxy.  If not proxy, this
+                # is None.
+                if non_proxy_socket:
+                    self.lsock = non_proxy_socket(socket.AF_INET,
+                                           socket.SOCK_STREAM)
+                else:
+                    self.lsock = socket.socket(socket.AF_INET,
+                                           socket.SOCK_STREAM)
+                self.lsock.connect((self.sock_host,
+                                    self.sock_port))
+            except socket.error:
+                self.running = False
+                ret = True
+                self.log(logging.ERROR,
+                         "%s - Failed to open local socket",
+                         self.log_name)
+            return ret
+
         lconnect = 0;
         while self.running is True:
             # Continuously receive data from each socket and send it through the
@@ -105,24 +127,8 @@ class Relay(object):
                             # If the local socket has not been established yet,
                             # and we have received the connection string, start
                             # local socket.
-                            try:
-                                # check for proxy.  If not proxy, this
-                                # is None.
-                                if non_proxy_socket:
-                                    self.lsock = non_proxy_socket(socket.AF_INET,
-                                                           socket.SOCK_STREAM)
-                                else:
-                                    self.lsock = socket.socket(socket.AF_INET,
-                                                           socket.SOCK_STREAM)
-                                self.lsock.connect((self.sock_host,
-                                                    self.sock_port))
-                            except socket.error:
-                                self.running = False
-                                self.log(logging.ERROR,
-                                         "%s - Failed to open local socket",
-                                         self.log_name)
+                            if _connect_local(self):
                                 break
-
                             lconnect = 1;
                             self.log(logging.INFO,
                                     "%s - Local socket successfully opened",
@@ -139,10 +145,14 @@ class Relay(object):
                         self.wsock.send_binary(data_in)
                     else:
                         self.log(logging.INFO,
-                                 "%s - Received NULL from socket, Stopping",
+                                 "%s - Received NULL from local socket, reconnecting",
                                  self.log_name)
-                        self.running = False
-                        break
+                        if self.reconnect:
+                            time.sleep(2)
+                            _connect_local(self)
+                        else:
+                            self.running = False
+                            break
         if self.lsock:
             self.lsock.close()
             self.lsock = None
@@ -189,6 +199,7 @@ class Relay(object):
 
         self.log(logging.INFO, "%s - Stopping", self.log_name)
         self.running = False
+        self.reconnect = False
         if self.thread:
             self.thread.join()
             self.thread = None
@@ -196,11 +207,12 @@ class Relay(object):
 
 relays = []
 
-def create_relay(url, host, port, secure=True, log_func=None, local_socket=None):
+def create_relay(url, host, port, secure=True, log_func=None, local_socket=None,
+                 reconnect=False):
     global relays, non_proxy_socket
 
     non_proxy_socket = local_socket
-    newrelay = Relay(url, host, port, secure=secure, log=log_func)
+    newrelay = Relay(url, host, port, secure=secure, log=log_func, reconnect=reconnect)
     newrelay.start()
     relays.append(newrelay)
 

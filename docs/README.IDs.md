@@ -39,6 +39,12 @@ address, IMEI or other serial number that is unique.  To override the
 default behaviour, write to device_id before starting an application
 e.g. device_manager.py.  This is typically done at provisioning time.
 
+Note: the method used to generate the device_id can be overridden in
+the identity.py class.  See documentation in:
+```sh
+pydoc device_cloud/identity.py
+```
+
 Application ID
 --------------
 An application ID is the string that describes the application.  It

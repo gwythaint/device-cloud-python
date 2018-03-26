@@ -30,6 +30,7 @@ from device_cloud._core.constants import WORK_PUBLISH
 from device_cloud._core.constants import STATUS_NOT_FOUND
 from device_cloud._core import defs
 from device_cloud._core.handler import Handler
+from device_cloud.identity import Identity
 
 
 class Client(object):
@@ -84,6 +85,8 @@ class Client(object):
         if kwargs:
             self.config.update(kwargs)
 
+        self.identity = Identity()
+
 
     def initialize(self):
         """
@@ -127,7 +130,7 @@ class Client(object):
         else:
             try:
                 with open(device_id_path, "w") as id_file:
-                    self.config.device_id = str(uuid.uuid4())
+                    self.config.device_id = self.identity.get_device_id()
                     id_file.write(self.config.device_id)
             except:
                 print("Failed to write device_id")

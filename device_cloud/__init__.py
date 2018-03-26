@@ -56,12 +56,14 @@ from device_cloud._core.constants import STATUS_FAILURE
 import device_cloud.osal
 import device_cloud.ota_handler
 import device_cloud.relay
+import device_cloud.identity
 
 __all__ = ["Client",
            "status_string",
            "osal"
            "ota_handler",
            "relay",
+           "identity",
            "DEFAULT_CONFIG_DIR",
            "DEFAULT_CONFIG_FILE",
            "DEFAULT_KEEP_ALIVE",

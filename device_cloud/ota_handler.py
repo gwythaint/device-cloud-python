@@ -105,8 +105,8 @@ class OTAHandler(object):
 
         status = iot.STATUS_BAD_PARAMETER
         update_data = None
+        package_name = None
 
-        client.alarm_publish(ALARM_NAME, ALARM_STARTED)
         client.log(iot.LOGINFO, "Started OTA Update")
         client.event_publish("OTA: Started OTA Update")
         client.action_progress_update(request.request_id, "Started OTA Update")
@@ -126,6 +126,7 @@ class OTAHandler(object):
             client.log(iot.LOGINFO, "Downloading Package...")
             client.event_publish("OTA: Downloading Package...")
             package_name = params.get("package")
+            client.alarm_publish(ALARM_NAME, ALARM_STARTED, message="package: {}".format(package_name))
             status = self._package_download(client, package_name, download_timeout)
 
             # 2. Unzip Package
@@ -162,7 +163,7 @@ class OTAHandler(object):
                 client.log(iot.LOGINFO, "Running Pre-Install...")
                 client.event_publish("OTA: Running Pre-Install...")
                 client.action_progress_update(request.request_id, "Running Pre-Install")
-                client.alarm_publish(ALARM_NAME, ALARM_PRE_INSTALL)
+                client.alarm_publish(ALARM_NAME, ALARM_PRE_INSTALL, message="package: {}".format(package_name))
                 if not update_data.get('pre_install', ""):
                     status = iot.STATUS_SUCCESS
                     client.log(iot.LOGINFO, "No Pre-Install specified! "
@@ -187,7 +188,7 @@ class OTAHandler(object):
                 client.log(iot.LOGINFO, "Running Install...")
                 client.event_publish("OTA: Running Install...")
                 client.action_progress_update(request.request_id, "Running Install")
-                client.alarm_publish(ALARM_NAME, ALARM_INSTALL)
+                client.alarm_publish(ALARM_NAME, ALARM_INSTALL, message="package: {}".format(package_name))
                 status = self._execute(update_data['install'], package_dir)
             elif not error_notified:
                 error_notified = True
@@ -204,7 +205,7 @@ class OTAHandler(object):
                 client.log(iot.LOGINFO, "Running Post-Install...")
                 client.event_publish("OTA: Running Post-Install...")
                 client.action_progress_update(request.request_id, "Running Post-Install")
-                client.alarm_publish(ALARM_NAME, ALARM_POST_INSTALL)
+                client.alarm_publish(ALARM_NAME, ALARM_POST_INSTALL, message="package: {}".format(package_name))
                 if not update_data.get('post_install', ""):
                     status = iot.STATUS_SUCCESS
                     client.log(iot.LOGINFO, "No Post-Install specified! "
@@ -237,20 +238,20 @@ class OTAHandler(object):
             client.log(iot.LOGINFO, "OTA Successful!")
             client.event_publish("OTA: Update Successful!")
             client.action_progress_update(request.request_id, "Update Successful")
-            client.alarm_publish(ALARM_NAME, ALARM_COMPLETE)
+            client.alarm_publish(ALARM_NAME, ALARM_COMPLETE, message="package: {}".format(package_name))
             status_string = ""
         else:
             if update_data and 'error_action' in update_data and \
                update_data['error_action']:
                 client.event_publish("OTA: Running install error action!")
-                client.alarm_publish(ALARM_NAME, ALARM_INSTALL_ERROR)
+                client.alarm_publish(ALARM_NAME, ALARM_INSTALL_ERROR, message="package: {}".format(package_name))
                 client.log(iot.LOGWARNING, "Running install error action!")
                 self._execute(update_data['error_action'], package_dir)
 
             client.log(iot.LOGERROR, "OTA Failed!")
             client.event_publish("OTA: Update Failed!")
             client.action_progress_update(request.request_id, "Update Failed")
-            client.alarm_publish(ALARM_NAME, ALARM_FAILED)
+            client.alarm_publish(ALARM_NAME, ALARM_FAILED, message="package: {}".format(package_name))
             status_string = iot.status_string(status)
 
         client.action_acknowledge(request.request_id,

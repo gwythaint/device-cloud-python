@@ -500,7 +500,7 @@ def main():
         alarm_info = get_alarms(session_id, thing_key, "test_alarm", time_stamp)
         #print(json.dumps(alarm_info, indent=2, sort_keys=True))
         if alarm_info.get("success") is True:
-            if alarm_info:
+            if alarm_info and alarm_info['params']['values'] is not None:
                 for item in alarm_info['params']['values']:
                     msg = item.get("msg")
                     state = item.get("state")

@@ -490,12 +490,17 @@ def remote_access(client, params):
             socket if it drops.  E.g. http drops the socket after a
             connect.
     """
+    if not 'url' in params.keys():
+        return (iot.STATUS_FAILURE, "url parameter missing")
+    elif not 'host' in params.keys():
+        return (iot.STATUS_FAILURE, "host parameter missing")
+
     url = params["url"]
     host = params["host"]
     protocol = int(params["protocol"])
     reconnect = False
-    if params["reconnect"]:
-        reconnect = True
+    if "reconnect" in params.keys():
+        reconnect = params["reconnect"]
 
     if not check_listening_port(client, host, protocol):
         client.event_publish("Error: local port {} not listening".format(protocol))

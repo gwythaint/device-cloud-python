@@ -99,7 +99,6 @@ IOT_ROOT                = '/var/lib/python-device-cloud'
 IOT_ROLLBACK_FLAG       = IOT_ROOT + '/ota_rollback_enabled'
 IOT_TRIGGER_TIMER_FLAG  = IOT_ROOT + '/ota_timer_triggered'
 IOT_BOOTONCE_FLAG       = IOT_ROOT + '/ota_bootonce'
-IOT_ROLLBACK_MARKER     = IOT_ROOT + '/rollback_inprogress'
 REBOOT_DELAY_IN_SECONDS = 60
 SUCCESS         = 0
 ERROR           = 1
@@ -309,9 +308,6 @@ if __name__ == "__main__":
             print("ERROR: snapshot failed.  This error is not recoverable.\n"
                   "Unable to rollback.")
             sys.exit(ERROR) 
-        else:
-            # touch a flag so that we can verify rollback succeeded
-            exec_cmd("touch " + IOT_ROLLBACK_MARKER)
 
     # set a rollback timer trigger flag.  The watchdog will use
     # this file.  Must be set before starting agent. Upon success,
@@ -343,7 +339,7 @@ if __name__ == "__main__":
             sys.exit(ERROR) 
 
     if clear == True:
-        files = [ IOT_ROLLBACK_FLAG, IOT_TRIGGER_TIMER_FLAG, IOT_ROLLBACK_MARKER ]
+        files = [ IOT_ROLLBACK_FLAG, IOT_TRIGGER_TIMER_FLAG ]
         for f in files:
             if os.path.isfile(f):
                 try:

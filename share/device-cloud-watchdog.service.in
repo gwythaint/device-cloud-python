@@ -3,8 +3,8 @@ Description=WindRiver IoT Service Watchdog
 
 [Service]
 Type=forking
-ExecStart=-%bindir%/iot-watchdog start
-ExecStop=-%bindir%/iot-watchdog stop
+ExecStart=-%bindir%/device-cloud-watchdog start
+ExecStop=-%bindir%/device-cloud-watchdog stop
 
 [Install]
 WantedBy=multi-user.target

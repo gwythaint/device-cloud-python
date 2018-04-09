@@ -219,7 +219,7 @@ def set_trigger_flag():
         return ERROR
     return SUCCESS
 
-# the iot-watchdog-test.sh script will set this flag, but add the
+# the device-cloud-watchdog-test.sh script will set this flag, but add the
 # handler here for testing
 def set_rollback_enabled_flag():
     ''' Write a rollback trigger flag for initramfs '''
@@ -234,13 +234,13 @@ def set_rollback_enabled_flag():
 
 def start_watchdog():
     ''' Start the watch dog '''
-    print("INFO: iot-watchdog is to start to monitor agent ...\n")
+    print("INFO: device-cloud-watchdog is to start to monitor agent ...\n")
 
     # make sure there are no existing watchdogs running
-    exec_cmd("sudo systemctl stop iot-watchdog >& /dev/null")
+    exec_cmd("sudo systemctl stop device-cloud-watchdog >& /dev/null")
 
     # start the watchdog
-    cmd = 'sudo systemctl start iot-watchdog'
+    cmd = 'sudo systemctl start device-cloud-watchdog'
     ret, out, err = exec_cmd(cmd)
     if ret:
         print("ERROR: %s failed \n" % cmd)

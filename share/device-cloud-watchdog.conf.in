@@ -16,7 +16,7 @@
 
 #repair-binary          = /usr/sbin/repair
 #repair-timeout         =
-test-binary             = %bindir%/iot-watchdog-test.sh
+test-binary             = %bindir%/device-cloud-watchdog-test.sh
 
 #watchdog-device        = /dev/watchdog
 

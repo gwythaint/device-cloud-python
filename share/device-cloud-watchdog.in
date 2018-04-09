@@ -8,7 +8,7 @@
 #===============================================================================
 case "$1" in
 	start)
-		/usr/sbin/watchdog -f -c %etcdir%/iot-watchdog.conf
+		/usr/sbin/watchdog -f -c %etcdir%/device-cloud-watchdog.conf
 		exit 0
 		;;
 	stop)

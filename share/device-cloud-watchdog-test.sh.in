@@ -8,7 +8,7 @@
 #===============================================================================
 
 # This script is the systemd watchdog's "test_binary" as defined in
-# iot-watchdog.conf. The script will be invoked by watchdog periodically to
+# device-cloud-watchdog.conf. The script will be invoked by watchdog periodically to
 # check if the iot has removed ${WRA_TRIGGER_TIMER_FLAG} (removal of the flag
 # indicates the iot service has successfully registered to cloud). If the flag exists
 # for longer than WRA_UPTIME, it's considered that a update has failed and a
@@ -152,7 +152,7 @@ if [ -e ${WRA_TRIGGER_TIMER_FLAG} ] ; then
 			echo "Snapshot not available, cannot rollback."
 			# stop watchdog
 			clear_bootonce_in_FAT
-			sudo systemctl stop iot-watchdog
+			sudo systemctl stop device-cloud-watchdog
 			exit 0
 		fi
 
@@ -201,7 +201,7 @@ else
 	clear_bootonce_in_FAT
 
 	# stop watchdog
-	sudo systemctl stop iot-watchdog
+	sudo systemctl stop device-cloud-watchdog
 	
 fi
 exit 0

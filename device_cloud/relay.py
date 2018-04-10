@@ -84,7 +84,8 @@ class Relay(object):
         connection will be started when a specific string is received from the
         Cloud
         """
-        def _connect_local(self):
+        op_code_ping = 0x9
+        def _connect_local(self, socket_list):
             ret = False
             try:
                 # check for proxy.  If not proxy, this
@@ -95,6 +96,11 @@ class Relay(object):
                 else:
                     self.lsock = socket.socket(socket.AF_INET,
                                            socket.SOCK_STREAM)
+                    self.lsock.setblocking(0)
+                    socket_list.append(self.lsock)
+
+                    # disable nagle
+                    self.lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
                 self.lsock.connect((self.sock_host,
                                     self.sock_port))
             except socket.error:
@@ -106,28 +112,56 @@ class Relay(object):
             return ret
 
         lconnect = 0;
+        ws_empty_count = 0
+        ws_max_empty_check = 5
+        select_timeout = 1
         while self.running is True:
-            # Continuously receive data from each socket and send it through the
-            # other
             socket_list = [self.wsock]
+            write_list = []
             if self.lsock:
                 socket_list.append(self.lsock)
-            read_sockets, _ws, _es = select.select(socket_list, [], [], 1)
+
+            read_sockets, write_sockets, _es = select.select(socket_list,
+                                                 [], [], select_timeout)
+
+            # --------------------------------------------------------
+            # Workaround for websocket module.  select shows 0 sockets
+            # ready, but in fact there is a ws pkt waiting.  To force
+            # the select, append the wsock to the read_sockets list.
+            # 
+            # --------------------------------------------------------
+            if ws_empty_count == ws_max_empty_check:
+                #self.wsock.ping("PING")
+                read_sockets.append(self.wsock)
+                ws_empty_count = 0
+            if len(read_sockets) ==0:
+                ws_empty_count += 1
+
             for sock in read_sockets:
                 if sock == self.wsock:
                     try:
                         op, data_in = sock.recv_data()
+                        self.log(logging.DEBUG, "WS read {}".format(len(data_in)))
+                        
+                        # ------------------------------------------
+                        # handle websocket ping op code
+                        # ------------------------------------------
+                        if op == op_code_ping:
+                            self.log(logging.INFO, "Received ping, answering")
+                            self.wsock.pong(data_in)
+                            continue
                     except websocket.WebSocketConnectionClosedException:
                         self.running = False
                         break
                     if data_in:
                         if self.lsock:
                             self.lsock.send(data_in)
+                            #self.log(logging.DEBUG, "LS sent{}".format(len(data_in)))
                         elif lconnect == 0 and data_in.decode('ascii') == CONNECT_MSG:
                             # If the local socket has not been established yet,
                             # and we have received the connection string, start
                             # local socket.
-                            if _connect_local(self):
+                            if _connect_local(self, socket_list):
                                 break
                             lconnect = 1;
                             self.log(logging.INFO,
@@ -139,17 +173,20 @@ class Relay(object):
                                  self.log_name)
                         self.running = False
                         break
-                elif self.lsock and sock == self.lsock:
+                else:
                     data_in = sock.recv(4096)
+                    #self.log(logging.DEBUG,"LS recv {}".format(len(data_in)))
                     if data_in:
                         self.wsock.send_binary(data_in)
+                        #self.log(logging.DEBUG,"LS sent {}".format(len(data_in)))
                     else:
                         self.log(logging.INFO,
-                                 "%s - Received NULL from local socket, reconnecting",
-                                 self.log_name)
+                             "%s - Received NULL from local socket, reconnecting",
+                             self.log_name)
                         if self.reconnect:
+                            print("Reconnecting local socket")
                             time.sleep(2)
-                            _connect_local(self)
+                            _connect_local(self, socket_list)
                         else:
                             self.running = False
                             break

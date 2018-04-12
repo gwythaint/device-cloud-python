@@ -10,3 +10,4 @@ build/
 *.swp
 *.swo
 iot-connect.cfg
+*.patch

@@ -619,10 +619,11 @@ class ClientFileUploadAsyncSuccess(unittest.TestCase):
         mock_iter.return_value = iter(map(lambda x: x.encode(), file_content))
         mock_mqtt.return_value = helpers.init_mock_mqtt()
         post_kwargs = {}
-        def post_func(url, data=None, verify=None):
+        def post_func(url, data=None, verify=None, proxies={}):
             post_kwargs["url"] = url
             post_kwargs["data"] = data
             post_kwargs["verify"] = verify
+            post_kwargs["proxies"] = proxies
             return mock.Mock(status_code=200)
         mock_post.side_effect = post_func
         upload_callback = mock.Mock()

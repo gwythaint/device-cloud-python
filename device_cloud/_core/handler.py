@@ -39,8 +39,8 @@ from time import sleep
 import requests
 
 # for debugging only, uncomment the following two lines
-# import httplib
-# httplib.HTTPConnection.debuglevel = 1
+#import httplib
+#httplib.HTTPConnection.debuglevel = 1
 
 import paho.mqtt.client as mqttlib
 
@@ -574,7 +574,9 @@ class Handler(object):
         # -make sure not to retry on http errors > 400
         # -throttle printouts
         # ---------------------------------------------------------
-        response = requests.get(url, stream=True, verify=validate, timeout=3, headers=hdrs)
+        proxies = self.get_proxy_settings()
+        response = requests.get(url, stream=True, verify=validate, timeout=3,
+             headers=hdrs, proxies=proxies)
         self.logger.debug("HTTP Status %s" % response.status_code)
         if response.status_code == 200 or response.status_code == 206:
             count = 0
@@ -689,6 +691,37 @@ class Handler(object):
         file_xfer_obj.finish()
         return status
 
+    def get_proxy_settings(self):
+        if self.config.proxy:
+            self.logger.debug("Proxy support detected")
+            self.logger.debug("\ttype {} host {} port {}"
+                .format(self.config.proxy.type,
+                self.config.proxy.host,
+                str(self.config.proxy.port )))
+
+            proxy_host = self.config.proxy.host + ':' + str(self.config.proxy.port)
+            proxy_type = self.config.proxy.type.lower()
+
+            proxy_auth = ""
+
+            # setup auth
+            if self.config.proxy.username:
+                proxy_auth = self.config.proxy.username
+            if self.config.proxy.password:
+                proxy_auth += ':' + self.config.proxy.password
+                proxy_auth += '@'
+
+            # key type is always http.  There is a bug when using
+            # https.  The proxy tries to do a connect and fails with a
+            # 403 error.
+            proxies = {
+                'http':  proxy_type + '://' + proxy_auth + proxy_host
+            }
+        else:
+            proxies = None
+
+        return proxies
+
     def handle_file_upload(self, upload):
         """
         Handle any accepted D2C file transfers
@@ -706,17 +739,21 @@ class Handler(object):
                                           upload.file_id)
 
         response = None
+        proxies = self.get_proxy_settings()
+
         if os.path.exists(upload.file_path):
             # If file exists attempt upload
             with open(upload.file_path, "rb") as up_file:
                 # Secure or insecure HTTPS Post
                 if (self.config.validate_cloud_cert is False or
                         not self.config.ca_bundle_file):
-                    response = requests.post(url, data=up_file, verify=False)
+                    response = requests.post(url, data=up_file,
+                    verify=False, proxies=proxies)
                 else:
                     cert_location = self.config.ca_bundle_file
                     response = requests.post(url, data=up_file,
-                                             verify=cert_location)
+                                             verify=cert_location,
+                                             proxies=proxies)
 
             if response.status_code == 200:
                 self.logger.info("Successfully uploaded \"%s\"",

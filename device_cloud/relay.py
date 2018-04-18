@@ -74,128 +74,94 @@ class Relay(object):
 
         self.running = False
         self.thread = None
+        self.ws_thread = None
         self.lsock = None
         self.wsock = None
+        self.lconnect = 0
 
-    def _loop(self):
+    def _connect_local(self):
+        ret = False
+        try:
+            # check for proxy.  If not proxy, this
+            # is None.
+            if non_proxy_socket:
+                self.lsock = non_proxy_socket(socket.AF_INET,
+                                       socket.SOCK_STREAM)
+            else:
+                self.lsock = socket.socket(socket.AF_INET,
+                                       socket.SOCK_STREAM)
+                self.lsock.setblocking(0)
+
+                # disable nagle
+                self.lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+            self.lsock.connect((self.sock_host,
+                                self.sock_port))
+        except socket.error:
+            self.running = False
+            ret = True
+            self.log(logging.ERROR, "%s - Failed to open local socket",
+                     self.log_name)
+        return ret
+
+    def _on_local_message(self):
         """
-        Main loop that pipes all data from one socket to the next. The websocket
-        connection is established first so this is also where the local socket
-        connection will be started when a specific string is received from the
-        Cloud
+        Main loop that pipes all data from one socket to the next. The
+        websocket connection is established first and has its own
+        callback, so this is where the local socket will be handled.
         """
-        op_code_ping = 0x9
-        def _connect_local(self, socket_list):
-            ret = False
-            try:
-                # check for proxy.  If not proxy, this
-                # is None.
-                if non_proxy_socket:
-                    self.lsock = non_proxy_socket(socket.AF_INET,
-                                           socket.SOCK_STREAM)
-                else:
-                    self.lsock = socket.socket(socket.AF_INET,
-                                           socket.SOCK_STREAM)
-                    self.lsock.setblocking(0)
-                    socket_list.append(self.lsock)
-
-                    # disable nagle
-                    self.lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
-                self.lsock.connect((self.sock_host,
-                                    self.sock_port))
-            except socket.error:
-                self.running = False
-                ret = True
-                self.log(logging.ERROR,
-                         "%s - Failed to open local socket",
-                         self.log_name)
-            return ret
-
-        lconnect = 0;
-        ws_empty_count = 0
-        ws_max_empty_check = 5
-        select_timeout = 1
+        # ws data must be in binary format.  The websocket lib uses
+        # this op code
+        op_binary = 0x2
         while self.running is True:
-            socket_list = [self.wsock]
-            write_list = []
             if self.lsock:
-                socket_list.append(self.lsock)
-
-            read_sockets, write_sockets, _es = select.select(socket_list,
-                                                 [], [], select_timeout)
-
-            # --------------------------------------------------------
-            # Workaround for websocket module.  select shows 0 sockets
-            # ready, but in fact there is a ws pkt waiting.  To force
-            # the select, append the wsock to the read_sockets list.
-            # 
-            # --------------------------------------------------------
-            if ws_empty_count == ws_max_empty_check:
-                #self.wsock.ping("PING")
-                read_sockets.append(self.wsock)
-                ws_empty_count = 0
-            if len(read_sockets) ==0:
-                ws_empty_count += 1
-
-            for sock in read_sockets:
-                if sock == self.wsock:
-                    try:
-                        op, data_in = sock.recv_data()
-                        self.log(logging.DEBUG, "WS read {}".format(len(data_in)))
-                        
-                        # ------------------------------------------
-                        # handle websocket ping op code
-                        # ------------------------------------------
-                        if op == op_code_ping:
-                            self.log(logging.INFO, "Received ping, answering")
-                            self.wsock.pong(data_in)
-                            continue
-                    except websocket.WebSocketConnectionClosedException:
-                        self.running = False
-                        break
-                    if data_in:
-                        if self.lsock:
-                            self.lsock.send(data_in)
-                            #self.log(logging.DEBUG, "LS sent{}".format(len(data_in)))
-                        elif lconnect == 0 and data_in.decode('ascii') == CONNECT_MSG:
-                            # If the local socket has not been established yet,
-                            # and we have received the connection string, start
-                            # local socket.
-                            if _connect_local(self, socket_list):
-                                break
-                            lconnect = 1;
-                            self.log(logging.INFO,
-                                    "%s - Local socket successfully opened",
-                                     self.log_name)
+                socket_list = [self.lsock]
+                read_sockets, write_sockets, _es = select.select(socket_list, [], [], 1)
+                if len(read_sockets):
+                    data = self.lsock.recv(4096)
+                    if data:
+                        self.log(logging.DEBUG, "_on_local_message: send {} -> ws".format(len(data)))
+                        self.wsock.send(data, opcode=op_binary)
                     else:
-                        self.log(logging.INFO,
-                                 "%s - Received NULL from websocket, Stopping",
-                                 self.log_name)
-                        self.running = False
-                        break
-                else:
-                    data_in = sock.recv(4096)
-                    #self.log(logging.DEBUG,"LS recv {}".format(len(data_in)))
-                    if data_in:
-                        self.wsock.send_binary(data_in)
-                        #self.log(logging.DEBUG,"LS sent {}".format(len(data_in)))
-                    else:
-                        self.log(logging.INFO,
-                             "%s - Received NULL from local socket, reconnecting",
-                             self.log_name)
-                        if self.reconnect:
-                            print("Reconnecting local socket")
+                        self.log(logging.INFO, "{}: Received NULL from local socket".format(self.log_name))
+                        if self.reconnect and self.running:
+                            self.log(logging.INFO, "Reconnecting local socket")
                             time.sleep(2)
-                            _connect_local(self, socket_list)
+                            self._connect_local()
                         else:
                             self.running = False
                             break
+            else:
+                time.sleep(1)
         if self.lsock:
             self.lsock.close()
             self.lsock = None
-        self.wsock.close()
-        self.wsock = None
-        self.log(logging.INFO, "%s - Sockets Closed", self.log_name)
+        self.log(logging.INFO, "{} - Sockets Closed".format(self.log_name))
+
+    def _on_open(self, ws):
+        self.log(logging.INFO, "_on_open: starting thread loop")
+        self.thread = threading.Thread(target=self._on_local_message)
+        self.thread.start()
+
+    def _on_message(self, ws, data):
+
+        if data:
+            if data == CONNECT_MSG:
+                # If the local socket has not been established yet,
+                # and we have received the connection string, start
+                # local socket.
+                self._connect_local()
+                self.lconnect = 1;
+                self.log(logging.DEBUG, "{} Local socket opened".format(self.log_name))
+            else:
+                # send to local socket
+                self.log(logging.DEBUG, "_on_message: send {} -> local socket".format(len(data)))
+                self.lsock.send(data)
+
+    def _on_error(self, ws, exception):
+        self.log(logging.ERROR, "_on_error: exception {}".format(str(exception)))
+
+    def _on_close(self):
+        self.log(logging.INFO,"_on_close: websocket closed")
 
     def start(self):
         """
@@ -204,28 +170,17 @@ class Relay(object):
 
         if not self.running:
             self.running = True
-
             sslopt = {}
             if not self.secure:
                 sslopt["cert_reqs"] = ssl.CERT_NONE
-
-            # Connect websocket to Cloud
-            self.wsock = websocket.WebSocket(sslopt=sslopt)
-            try:
-                self.wsock.connect(self.wsock_host)
-            except ssl.SSLError as error:
-                self.running = False
-                self.wsock.close()
-                self.wsock = None
-                self.log(logging.ERROR, "%s - Failed to open Websocket",
-                         self.log_name)
-                raise error
-
-            self.log(logging.INFO, "%s - Websocket Opened", self.log_name)
-
-            self.thread = threading.Thread(target=self._loop)
-            self.thread.start()
-
+            self.wsock = websocket.WebSocketApp( 
+                    self.wsock_host,
+                    on_message=self._on_message,
+                    on_error=self._on_error,
+                    on_close=self._on_close,
+                    on_open=self._on_open)
+            self.ws_thread = threading.Thread(target=self.wsock.run_forever, kwargs={'sslopt': sslopt})
+            self.ws_thread.start()
         else:
             raise RuntimeError("{} - Already running!".format(self.log_name))
 
@@ -234,12 +189,15 @@ class Relay(object):
         Stop piping data between the two connections and stop the loop thread
         """
 
-        self.log(logging.INFO, "%s - Stopping", self.log_name)
+        self.log(logging.INFO, "{} Stopping".format(self.log_name))
         self.running = False
         self.reconnect = False
         if self.thread:
             self.thread.join()
             self.thread = None
+        if self.ws_thread:
+            self.ws_thread.join()
+            self.ws_thread = None
 
 
 relays = []

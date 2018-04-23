@@ -60,7 +60,7 @@ setup(
         'requests==2.18.4',
         'simplejson==3.8.1',
         'urllib3==1.22',
-        'websocket-client==0.44.0'
+        'websocket-client==0.47.0'
         ],
     maintainer='Paul Barrette',
     maintainer_email='paul.barrette@windriver.com',

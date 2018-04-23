@@ -6,4 +6,4 @@ queues==0.6.3
 requests==2.9.1
 simplejson==3.8.1
 urllib3==1.13.1
-websocket-client==0.44.0
+websocket-client==0.47.0

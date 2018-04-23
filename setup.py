@@ -51,7 +51,10 @@ setup(
                                           'COPYING.txt',
                                           'README.md',
                                           'README.macOSX.md',
-                                          'README.style.md'])] + addDir("share"),
+                                          'README.style.md',
+                                          'validate_app.py',
+                                          'validate_device_manager.py',
+                                          'validate_script.py'])] + addDir("share"),
     install_requires=[
         'certifi==2017.11.5',
         'paho-mqtt==1.3.1',

@@ -1639,13 +1639,15 @@ class OTAUpdateSoftware(unittest.TestCase):
         self.request = mock.Mock()
         self.request.message_id = 1234
 
+    @mock.patch("os.path.exists")
+    @mock.patch(builtin + ".open")
     @mock.patch("os.remove")
     @mock.patch("os.path")
     @mock.patch("device_cloud.ota_handler.OTAHandler._execute")
     @mock.patch("device_cloud.ota_handler.OTAHandler._read_update_json")
     @mock.patch("device_cloud.ota_handler.OTAHandler._package_unzip")
     @mock.patch("device_cloud.ota_handler.OTAHandler._package_download")
-    def runTest(self, mock_dl, mock_unzip, mock_read, mock_execute, mock_path, mock_remove):
+    def runTest(self, mock_dl, mock_unzip, mock_read, mock_execute, mock_path, mock_remove, mock_open, mock_exists):
         # Store mocks for tests
         self.mock_dl = mock_dl
         self.mock_unzip = mock_unzip
@@ -1653,6 +1655,8 @@ class OTAUpdateSoftware(unittest.TestCase):
         self.mock_execute = mock_execute
         self.mock_path = mock_path
         self.mock_remove = mock_remove
+        self.mock_write = mock_open.return_value.__enter__.return_value.write
+        self.mock_exists = mock_exists
 
         # Run Tests
         self.successCase()

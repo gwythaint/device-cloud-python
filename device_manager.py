@@ -64,14 +64,16 @@ def ack_messages(client, path):
     Check for a pending message to acknowledge and, if present, send the mailbox
     acknowledgement to the cloud.
     """
+    print("ack_messages path {}".format(path))
     if os.path.isfile(path):
         with open(path, 'r') as id_file:
-            msg_id = id_file.read()
-            if msg_id:
-                client.action_acknowledge(msg_id)
+            for msg_id in id_file:
+                # check for format id,status and send status too.
+                id, status = msg_id.split(',')
+                print("ack_messages:  {}".format(msg_id))
+                client.action_acknowledge(id, error_code=status.rstrip())
 
         os.remove(path)
-
 
 def action_register_conditional(client, name, callback, enabled, \
                                 user_data=None):
@@ -91,8 +93,12 @@ def agent_reset(client, params, user_data, request):
     running = False
 
     path = os.path.join(user_data[0], "message_ids")
-    with open(path, 'w') as id_file:
-        id_file.write(request.request_id)
+    open_mode = 'w'
+    if os.path.exists(path):
+        open_mode = 'a'
+    with open(path, open_mode) as id_file:
+        msg = "{},{}".format(request.request_id, 0)
+        id_file.write(msg)
 
     user_data[1].join()
     client.disconnect(wait_for_replies=True)
@@ -349,7 +355,7 @@ def file_upload(client, params, user_data):
 def file_upload_dir(user_data, file_path, file_name):
     """
     Return upload file_path and file_name for when they are not specified
-    (i.e. upload entire runtime directory) or the file_path is a directory. 
+    (i.e. upload entire runtime directory) or the file_path is a directory.
     """
     runtime_dir = user_data[0]
     upload_format_is_tar = user_data[2]

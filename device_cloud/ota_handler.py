@@ -240,6 +240,7 @@ class OTAHandler(object):
             client.action_progress_update(request.request_id, "Update Successful")
             client.alarm_publish(ALARM_NAME, ALARM_COMPLETE, message="package: {}".format(package_name))
             status_string = ""
+
         else:
             if update_data and 'error_action' in update_data and \
                update_data['error_action']:
@@ -254,6 +255,19 @@ class OTAHandler(object):
             client.alarm_publish(ALARM_NAME, ALARM_FAILED, message="package: {}".format(package_name))
             status_string = iot.status_string(status)
 
+        # -----------------------------------------------------------------
+        # write the id,status to a file for when the agent is updated.  The
+        # device manager checks for a file "message_ids" and acks the
+        # action.
+        # -----------------------------------------------------------------
+        path = os.path.join(self._runtime_dir, "message_ids")
+        open_mode = 'w'
+        if os.path.exists(path):
+            open_mode = 'a'
+        with open(path, open_mode) as fh:
+            fh.write("{},{}".format(request.request_id, status))
+            msg = "{},{}".format(request.request_id, 0)
+            fh.write(msg)
         client.action_acknowledge(request.request_id,
                                   status, status_string)
 
@@ -286,7 +300,6 @@ class OTAHandler(object):
                     else:
                         client.log(iot.LOGINFO,"{}".format(line.rstrip()))
             client.log(iot.LOGINFO,"OTA STDOUT log dump complete.")
-            
             ts = datetime.utcnow().strftime("%Y-%m-%d-%S")
             output_file = "ota_install-{}.log".format(ts)
             client.file_upload(stdout_log, upload_name=output_file,

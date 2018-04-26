@@ -1,4 +1,5 @@
 *.pyc
+junk/
 device_id
 download/
 *.coverage

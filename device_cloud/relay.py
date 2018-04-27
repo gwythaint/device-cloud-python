@@ -24,6 +24,7 @@ import socket
 import ssl
 import threading
 import time
+import sys
 # -------------------------------------------------------------------
 # Note: when using a proxy server, the socket class is overlayed with
 # pysocks class.  Keep around a local copy so that local socket
@@ -135,6 +136,9 @@ class Relay(object):
         if self.lsock:
             self.lsock.close()
             self.lsock = None
+        if self.wsock:
+            self.wsock.close()
+            self.wsock = None
         self.log(logging.INFO, "{} - Sockets Closed".format(self.log_name))
 
     def _on_open(self, ws):
@@ -155,6 +159,10 @@ class Relay(object):
             else:
                 # send to local socket
                 self.log(logging.DEBUG, "_on_message: send {} -> local socket".format(len(data)))
+
+                # py3 data of type string needs to be byte encoded
+                if isinstance(data, str) and sys.version_info[0] > 2:
+                    data = bytes(data, 'utf-8')
                 self.lsock.send(data)
 
     def _on_error(self, ws, exception):
@@ -162,6 +170,9 @@ class Relay(object):
 
     def _on_close(self):
         self.log(logging.INFO,"_on_close: websocket closed")
+        if self.lsock:
+            self.lsock.close()
+        self.running = False
 
     def start(self):
         """

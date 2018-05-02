@@ -97,7 +97,7 @@ def agent_reset(client, params, user_data, request):
     if os.path.exists(path):
         open_mode = 'a'
     with open(path, open_mode) as id_file:
-        msg = "{},{}".format(request.request_id, 0)
+        msg = "{},{}\n".format(request.request_id, 0)
         id_file.write(msg)
 
     user_data[1].join()

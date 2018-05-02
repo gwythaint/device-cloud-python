@@ -265,9 +265,7 @@ class OTAHandler(object):
         if os.path.exists(path):
             open_mode = 'a'
         with open(path, open_mode) as fh:
-            fh.write("{},{}".format(request.request_id, status))
-            msg = "{},{}".format(request.request_id, 0)
-            fh.write(msg)
+            fh.write("{},{}\n".format(request.request_id, status))
         client.action_acknowledge(request.request_id,
                                   status, status_string)
 

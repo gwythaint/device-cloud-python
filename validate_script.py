@@ -176,9 +176,7 @@ def stop_app(proc):
     """
 
     if proc:
-        if proc.poll() is None:
-            out = proc.communicate(b"\n")
-            proc.wait()
+        proc.kill()
 
 
 def error_quit(*args):

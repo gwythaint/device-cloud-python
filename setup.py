@@ -58,7 +58,7 @@ setup(
     install_requires=[
         'certifi==2017.11.5',
         'paho-mqtt==1.3.1',
-        'PySocks==1.6.7',
+        'PySocks==1.6.8',
         'queues==0.6.3',
         'requests==2.18.4',
         'simplejson==3.8.1',

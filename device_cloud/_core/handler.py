@@ -948,51 +948,61 @@ class Handler(object):
         if to_publish:
             # If pending publishes are found, parse into list for sending
             messages = []
+            batch = {}
+            batch['PublishAlarm'] = []
+            batch['PublishAttribute'] = []
+            batch['PublishTelemetry'] = []
+            batch['PublishLocation'] = []
+            batch['PublishLog'] = []
             for pub in to_publish:
-                # Create publish command for an alarm
+                message = None
+                # ------------------
+                # Alarms
+                # ------------------
                 if pub.type == "PublishAlarm":
-                    command = tr50.create_alarm_publish(self.config.key,
-                                                        pub.name, pub.state,
-                                                        message=pub.message,
-                                                        timestamp=pub.timestamp,
-                                                        republish=pub.republish)
-                    message_desc = "Alarm Publish {}".format(pub.name)
-                    message_desc += " : {}".format(pub.state)
-                    message = defs.OutMessage(command, message_desc)
+                    batch[pub.type].append(
+                        tr50.create_alarm_batch_item(
+                            pub.name,
+                            pub.state,
+                            pub.timestamp,
+                            pub.message,
+                            pub.republish))
 
-                # Create publish command for strings
+                # ------------------
+                # Attributes
+                # ------------------
                 elif pub.type == "PublishAttribute":
-                    command = tr50.create_attribute_publish(self.config.key,
-                                                            pub.name, pub.value,
-                                                            timestamp=pub.timestamp)
-                    message_desc = "Attribute Publish {}".format(pub.name)
-                    message_desc += " : \"{}\"".format(pub.value)
-                    message = defs.OutMessage(command, message_desc)
+                    batch[pub.type].append(
+                        tr50.create_attribute_batch_item(
+                            pub.name,
+                            pub.value,
+                            pub.timestamp))
 
-                # Create publish command for numbers
                 elif pub.type == "PublishTelemetry":
-                    command = tr50.create_property_publish(self.config.key,
-                                                           pub.name, pub.value,
-                                                           timestamp=pub.timestamp)
-                    message_desc = "Property Publish {}".format(pub.name)
-                    message_desc += " : {}".format(pub.value)
-                    message = defs.OutMessage(command, message_desc)
+                    batch[pub.type].append(
+                        tr50.create_property_batch_item(
+                            pub.name,
+                            pub.value,
+                            pub.timestamp ))
 
-                # Create publish command for location
+                # ------------------
+                # Location
+                # ------------------
                 elif pub.type == "PublishLocation":
-                    command = tr50.create_location_publish(self.config.key,
-                                                           pub.latitude,
-                                                           pub.longitude,
-                                                           heading=pub.heading,
-                                                           altitude=pub.altitude,
-                                                           speed=pub.speed,
-                                                           fix_accuracy=pub.accuracy,
-                                                           fix_type=pub.fix_type,
-                                                           timestamp=pub.timestamp)
-                    message_desc = "Location Publish {}".format(str(pub))
-                    message = defs.OutMessage(command, message_desc)
+                    batch[pub.type].append(
+                        tr50.create_location_batch_item(
+                            pub.latitude,
+                            pub.longitude,
+                            pub.heading,
+                            pub.altitude,
+                            pub.speed,
+                            pub.accuracy,
+                            pub.fix_type,
+                            pub.timestamp))
 
-                # Create publish command for a log
+                # ------------------
+                # Event logs
+                # ------------------
                 elif pub.type == "PublishLog":
                     command = tr50.create_log_publish(self.config.key,
                                                       pub.message,
@@ -1000,11 +1010,67 @@ class Handler(object):
                     message_desc = "Log Publish {}".format(pub.message)
                     message = defs.OutMessage(command, message_desc)
 
-                messages.append(message)
+                if message:
+                    messages.append(message)
 
             # Send all publishes
             if messages:
                 status = self.send(messages)
+
+            # send out batches
+            if batch['PublishAlarm']:
+                timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                command = tr50.create_alarm_publish(self.config.key,
+                                                    "alarm_batch",
+                                                    "Alarm Batch",
+                                                    timestamp=timestamp,
+                                                    republish=False,
+                                                    batch=True)
+                message_desc = "Alarm Publish {}".format("alarm_batch")
+                message_desc += " : \"{}\"".format("Alarm Batch")
+                batch_msg = defs.OutMessage(command, message_desc)
+                batch_msg.command['params']['state'] = 0
+                batch_msg.command['params']['data'] = batch['PublishAlarm']
+                status = self.send(batch_msg)
+
+            if batch['PublishAttribute']:
+                timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                command = tr50.create_attribute_publish(self.config.key,
+                                                        "attribute_batch",
+                                                        "Attribute Batch",
+                                                        timestamp=timestamp,
+                                                        batch=True)
+                message_desc = "Attribute Publish {}".format("attribute_batch")
+                message_desc += " : \"{}\"".format("Attribute Batch")
+                batch_msg = defs.OutMessage(command, message_desc)
+                batch_msg.command['params']['data'] = batch['PublishAttribute']
+                status = self.send(batch_msg)
+
+            if batch['PublishLocation']:
+                timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                command = tr50.create_location_publish(self.config.key,
+                                                        "location_batch",
+                                                        "Location Batch",
+                                                        timestamp=timestamp,
+                                                        batch=True)
+                message_desc = "Location Publish {}".format("location_batch")
+                message_desc += " : \"{}\"".format("Location Batch")
+                batch_msg = defs.OutMessage(command, message_desc)
+                batch_msg.command['params']['data'] = batch['PublishLocation']
+                status = self.send(batch_msg)
+
+            if batch['PublishTelemetry']:
+                timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                command = tr50.create_property_publish(self.config.key,
+                                                        "property_batch",
+                                                        "Property Batch",
+                                                        timestamp=timestamp,
+                                                        batch=True)
+                message_desc = "Property Publish {}".format("property_batch")
+                message_desc += " : \"{}\"".format("Property Batch")
+                batch_msgs = defs.OutMessage(command, message_desc)
+                batch_msgs.command['params']['data'] =  batch['PublishTelemetry']
+                status = self.send(batch_msgs)
 
         return status
 

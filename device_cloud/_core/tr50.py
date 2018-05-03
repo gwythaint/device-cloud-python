@@ -51,19 +51,23 @@ class TR50Command(object):
     """
 
     alarm_publish = "alarm.publish"
+    alarm_batch = "alarm.batch"
     attribute_current = "attribute.current"
     attribute_publish = "attribute.publish"
+    attribute_batch = "attribute.batch"
     diag_echo = "diag.echo"
     diag_ping = "diag.ping"
     diag_time = "diag.time"
     file_get = "file.get"
     file_put = "file.put"
     location_publish = "location.publish"
+    location_batch = "location.batch"
     log_publish = "log.publish"
     mailbox_ack = "mailbox.ack"
     mailbox_check = "mailbox.check"
     mailbox_update = "mailbox.update"
     property_publish = "property.publish"
+    property_batch = "property.batch"
     property_current = "property.current"
     thing_find = "thing.find"
     thing_update = "thing.update"
@@ -82,7 +86,7 @@ def _generate_params(kwargs):
 
 def create_alarm_publish(thing_key, key, state, message=None, timestamp=None,
                          corr_id=None, latitude=None, longitude=None,
-                         republish=None):
+                         republish=None, batch=False):
     """
     Generate a TR50 JSON request for publishing an alarm
     """
@@ -98,9 +102,22 @@ def create_alarm_publish(thing_key, key, state, message=None, timestamp=None,
         "lng":longitude,
         "republish":republish
     }
-    cmd = {"command":TR50Command.alarm_publish}
+    if batch:
+        cmd = {"command":TR50Command.alarm_batch}
+    else:
+        cmd = {"command":TR50Command.alarm_publish}
     cmd["params"] = _generate_params(kwargs)
     return cmd
+
+def create_alarm_batch_item(key, state, timestamp=None, message=None, republish=False):
+    d = {
+        'key':key,
+        'state':state,
+        'ts':timestamp,
+        'msg':message,
+        'republish':republish
+    }
+    return d
 
 def create_attribute_current(thing_key, key, timestamp=None):
     """
@@ -117,7 +134,7 @@ def create_attribute_current(thing_key, key, timestamp=None):
     return cmd
 
 def create_attribute_publish(thing_key, key, value, timestamp=None,
-                             republish=None):
+                             republish=None, batch=False):
     """
     Generate a TR50 JSON request for publishing a string value
     """
@@ -129,9 +146,22 @@ def create_attribute_publish(thing_key, key, value, timestamp=None,
         "ts":timestamp,
         "republish":republish
     }
-    cmd = {"command":TR50Command.attribute_publish}
+    if batch:
+        cmd = {"command":TR50Command.attribute_batch}
+    else:
+        cmd = {"command":TR50Command.attribute_publish}
     cmd["params"] = _generate_params(kwargs)
     return cmd
+
+def create_attribute_batch_item(key, value, timestamp=None,
+                             republish=None):
+    d = {
+        'key':key,
+        'value':value,
+        'ts':timestamp,
+        'republish':republish
+    }
+    return d
 
 def create_diag_echo(params):
     """
@@ -195,7 +225,8 @@ def create_location_publish(thing_key, latitude, longitude, heading=None,
                             altitude=None, speed=None, fix_accuracy=None,
                             fix_type=None, timestamp=None, corr_id=None,
                             debounce=None, street_number=None, street=None,
-                            city=None, state=None, zip_code=None, country=None):
+                            city=None, state=None, zip_code=None,
+                            country=None, batch=False):
     """
     Generate a TR50 JSON request for publishing a location to the Cloud
     """
@@ -219,9 +250,38 @@ def create_location_publish(thing_key, latitude, longitude, heading=None,
         "zipCode":zip_code,
         "country":country
     }
-    cmd = {"command":TR50Command.location_publish}
+    if batch:
+        cmd = {"command":TR50Command.location_batch}
+    else:
+        cmd = {"command":TR50Command.location_publish}
     cmd["params"] = _generate_params(kwargs)
     return cmd
+
+def create_location_batch_item(latitude, longitude, heading=None,
+                            altitude=None, speed=None, fix_accuracy=None,
+                            fix_type=None, timestamp=None, corr_id=None,
+                            debounce=None, street_number=None, street=None,
+                            city=None, state=None, zip_code=None,
+                            country=None):
+    d = {
+        "lat":latitude,
+        "lng":longitude,
+        "heading":heading,
+        "altitude":altitude,
+        "speed":speed,
+        "fixAcc":fix_accuracy,
+        "fixType":fix_type,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "debounce":debounce,
+        "streetNumber":street_number,
+        "street":street,
+        "city":city,
+        "state":state,
+        "zipCode":zip_code,
+        "country":country
+    }
+    return d
 
 def create_log_publish(thing_key, message, timestamp=None, level=None,
                        corr_id=None, global_log=None):
@@ -286,7 +346,7 @@ def create_mailbox_update(mail_id, message):
     return cmd
 
 def create_property_publish(thing_key, key, value, timestamp=None, corr_id=None,
-                            aggregate=None):
+                            aggregate=None, batch=False):
     """
     Generate a TR50 JSON request for publishing a numeric value to the Cloud
     """
@@ -299,9 +359,23 @@ def create_property_publish(thing_key, key, value, timestamp=None, corr_id=None,
         "corrId":corr_id,
         "aggregate":aggregate
     }
-    cmd = {"command":TR50Command.property_publish}
+    if batch:
+        cmd = {"command":TR50Command.property_batch}
+    else:
+        cmd = {"command":TR50Command.property_publish}
     cmd["params"] = _generate_params(kwargs)
     return cmd
+
+def create_property_batch_item(key, value, timestamp=None,
+                                corr_id=None, aggregate=False):
+    d = {
+            'key':key,
+            'value':value,
+            'ts':timestamp,
+            'corrId':corr_id,
+            'aggregate':aggregate
+    }
+    return d
 
 def create_property_get_current( thing_key, key, timestamp=None):
 

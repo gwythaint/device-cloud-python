@@ -513,11 +513,18 @@ def remote_access(client, params):
         return (iot.STATUS_FAILURE, "Error: port (%d) not listening" % protocol)
 
     secure = client.config.validate_cloud_cert is not False
+
+    # pass in the proxy info to the websocket lib
+    if client.config.proxy:
+        proxy = client.config.proxy
+    else:
+        proxy = None
+
     try:
         relay.create_relay(url, host, protocol, secure=secure,
                            log_func=client.log,
                            local_socket=client.handler.original_socket,
-                           reconnect=reconnect)
+                           reconnect=reconnect, proxy=proxy)
         return (iot.STATUS_SUCCESS, "")
     except Exception as error:
         client.error(str(error))

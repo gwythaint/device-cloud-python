@@ -59,11 +59,11 @@ class Relay(object):
         self.sock_port = sock_port
         self.secure = secure
         self.log = log
+        self.proxy = None
         self.log_name = "Relay:{}:{}({:0>5})".format(self.sock_host,
                                                     self.sock_port,
                                                     random.randint(0,99999))
         self.reconnect = reconnect
-
         if self.log is None:
             self.logger = logging.getLogger(self.log_name)
             log_handler = logging.StreamHandler()
@@ -91,17 +91,16 @@ class Relay(object):
             else:
                 self.lsock = socket.socket(socket.AF_INET,
                                        socket.SOCK_STREAM)
-                self.lsock.setblocking(0)
 
-                # disable nagle
-                self.lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+            self.lsock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
             self.lsock.connect((self.sock_host,
                                 self.sock_port))
-        except socket.error:
+            self.lsock.setblocking(0)
+        except socket.error as err:
             self.running = False
             ret = True
-            self.log(logging.ERROR, "%s - Failed to open local socket",
-                     self.log_name)
+            self.log(logging.ERROR, "{} Failed to open local socket.".format(self.log_name))
+            self.log(logging.ERROR, "Reason: {} ".format(str(err)))
         return ret
 
     def _on_local_message(self):
@@ -118,10 +117,19 @@ class Relay(object):
                 socket_list = [self.lsock]
                 read_sockets, write_sockets, _es = select.select(socket_list, [], [], 1)
                 if len(read_sockets):
-                    data = self.lsock.recv(4096)
+                    try:
+                        data = self.lsock.recv(4096)
+                    except:
+                        # during a close a read might return a EBADF,
+                        # that is ok, pass it don't dump an exception
+                        pass
                     if data:
                         self.log(logging.DEBUG, "_on_local_message: send {} -> ws".format(len(data)))
-                        self.wsock.send(data, opcode=op_binary)
+                        try:
+                            self.wsock.send(data, opcode=op_binary)
+                        except websocket.WebSocketConnectionClosedException:
+                            self.log(logging.ERROR, "Websocket closed")
+                            break
                     else:
                         self.log(logging.INFO, "{}: Received NULL from local socket".format(self.log_name))
                         if self.reconnect and self.running:
@@ -167,8 +175,13 @@ class Relay(object):
 
     def _on_error(self, ws, exception):
         self.log(logging.ERROR, "_on_error: exception {}".format(str(exception)))
+        if self.lsock:
+            self.lsock.close()
+        if self.wsock:
+            self.wsock.close()
+        self.stop()
 
-    def _on_close(self):
+    def _on_close(self, ws):
         self.log(logging.INFO,"_on_close: websocket closed")
         if self.lsock:
             self.lsock.close()
@@ -184,13 +197,18 @@ class Relay(object):
             sslopt = {}
             if not self.secure:
                 sslopt["cert_reqs"] = ssl.CERT_NONE
-            self.wsock = websocket.WebSocketApp( 
+            self.wsock = websocket.WebSocketApp(
                     self.wsock_host,
                     on_message=self._on_message,
                     on_error=self._on_error,
                     on_close=self._on_close,
                     on_open=self._on_open)
-            self.ws_thread = threading.Thread(target=self.wsock.run_forever, kwargs={'sslopt': sslopt})
+            kwargs = {'sslopt': sslopt}
+            if self.proxy:
+                self.log(logging.DEBUG, "start:self.proxy={} ".format(self.proxy)),
+                kwargs['http_proxy_host'] = self.proxy.host
+                kwargs['http_proxy_port'] = self.proxy.port
+            self.ws_thread = threading.Thread(target=self.wsock.run_forever, kwargs=kwargs)
             self.ws_thread.start()
         else:
             raise RuntimeError("{} - Already running!".format(self.log_name))
@@ -214,11 +232,13 @@ class Relay(object):
 relays = []
 
 def create_relay(url, host, port, secure=True, log_func=None, local_socket=None,
-                 reconnect=False):
+                 reconnect=False, proxy=None):
     global relays, non_proxy_socket
 
     non_proxy_socket = local_socket
     newrelay = Relay(url, host, port, secure=secure, log=log_func, reconnect=reconnect)
+    if proxy:
+        newrelay.proxy = proxy
     newrelay.start()
     relays.append(newrelay)
 

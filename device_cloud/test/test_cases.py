@@ -544,7 +544,6 @@ class ClientFileDownloadAsyncSuccess(unittest.TestCase):
         kwargs = {"loop_time":1, "thread_count":1}
         self.client = device_cloud.Client("testing-client", kwargs)
         self.client.initialize()
-        self.client.idle_sleep = None
 
         # Connect client to Cloud
         mqtt = self.client.handler.mqtt
@@ -634,7 +633,6 @@ class ClientFileUploadAsyncSuccess(unittest.TestCase):
         kwargs = {"loop_time":1, "thread_count":1}
         self.client = device_cloud.Client("testing-client", kwargs)
         self.client.initialize()
-        self.client.idle_sleep = None
 
         # Connect client to Cloud
         mqtt = self.client.handler.mqtt
@@ -1141,7 +1139,7 @@ class HandleActionExecCallbackSuccess(unittest.TestCase):
         self.client.initialize()
 
         # disable the idle loop
-        self.client.idle_sleep = None
+        self.client.idle_sleep = 0.1
 
         # Set up action callback
         mqtt = self.client.handler.mqtt
@@ -2259,7 +2257,7 @@ class ClientFileDownloadAsyncChecksumFail(unittest.TestCase):
         kwargs = {"loop_time":1, "thread_count":1}
         self.client = device_cloud.Client("testing-client", kwargs)
         self.client.initialize()
-        self.client.idle_sleep = None
+        self.client.idle_sleep = 0.1
 
         # Connect client to Cloud
         mqtt = self.client.handler.mqtt
@@ -2357,7 +2355,7 @@ class ClientFileDownloadAsyncRequestFail(unittest.TestCase):
         kwargs = {"loop_time":1, "thread_count":1}
         self.client = device_cloud.Client("testing-client", kwargs)
         self.client.initialize()
-        self.client.idle_sleep = None
+        self.client.idle_sleep = 0.1
 
         # Connect client to Cloud
         mqtt = self.client.handler.mqtt

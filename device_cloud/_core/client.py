@@ -46,7 +46,7 @@ class Client(object):
         warning(message)
     """
 
-    def __init__(self, app_id, kwargs=None, offline=False):
+    def __init__(self, app_id, kwargs=None, offline=False, error_handler=None):
         """
         Start configuration of client. Configuration file location and name can
         be updated after this if necessary. MUST be followed by
@@ -87,6 +87,13 @@ class Client(object):
 
         self.identity = Identity()
 
+        # Add sleep for idle loop
+        # default is 0.1
+        self.idle_sleep = 0.1
+
+        # Client notification handler for reply errors
+        # 3 parameters: error list, sent_message, reply
+        self.error_handler = error_handler
 
     def initialize(self):
         """

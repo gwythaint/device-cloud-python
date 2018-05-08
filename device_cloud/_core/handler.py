@@ -825,6 +825,12 @@ class Handler(object):
                                       topic_num, command_num, sent_message)
                     self.logger.error(".... %s", str(reply))
 
+                    if self.client.error_handler:
+                        self.client.error_handler(
+                        reply.get("errorCodes", []),
+                        sent_message,
+                        str(reply))
+
                 # Return "success" status
                 if self.pub_wait:
                     if self.pub_topic == topic_num:
@@ -1524,7 +1530,12 @@ class Handler(object):
                 if topic_num not in self.reply_tracker:
                     break
             self.pub_topic = topic_num
+            # -----------------------------------------------------
             # Send payload over MQTT
+            # Add small delay here so that we don't cross the API/s
+            # threshold
+            # -----------------------------------------------------
+            sleep(self.client.idle_sleep)
             result, mid = self.mqtt.publish("api/{}".format(topic_num),
                                             payload, qos = self.qos_level)
 

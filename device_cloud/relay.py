@@ -63,6 +63,9 @@ class Relay(object):
         self.secure = secure
         self.log = log
         self.proxy = None
+
+        # for python3 str transformation
+        self.def_enc = "ISO-8859-1"
         self.log_name = "Relay:{}:{}({:0>5})".format(self.sock_host,
                                                     self.sock_port,
                                                     random.randint(0,99999))
@@ -115,6 +118,31 @@ class Relay(object):
             self.log(logging.ERROR, "Reason: {} ".format(str(err)))
         return ret
 
+    def _prepend_index(self, idx, data):
+
+        # python3 data is in bytes format and must be decoded before
+        # prepending.  Python2 is in str format so you can easily
+        # prepend the idx.
+        if sys.version_info[0] > 2:
+            d = chr(idx)
+            d += data.decode(self.def_enc)
+            d = bytes(d, self.def_enc)
+        else:
+            d = chr(idx) + data
+        return d
+
+    def _strip_index(self, d):
+        if sys.version_info[0] > 2:
+            raw_data = bytes(d, self.def_enc)
+            idx = raw_data[0]
+            data = raw_data[1:]
+        else:
+            raw_data = bytearray(d, self.def_enc)
+            idx = raw_data[0]
+            del raw_data[0]
+            data = raw_data
+        return data, int(idx)
+
     def _on_local_message(self):
         """
         Main loop that pipes all data from one socket to the next. The
@@ -142,8 +170,10 @@ class Relay(object):
                             idx = self.lsocket_map[s]
                             try:
                                 if self._multi_channel:
-                                    data = chr(idx) + data
-                                self.wsock.send(data, opcode=op_binary)
+                                    d = self._prepend_index(idx, data)
+                                else:
+                                    d = data
+                                self.wsock.send(d, opcode=op_binary)
                             except websocket.WebSocketConnectionClosedException:
                                 self.log(logging.ERROR, "Websocket closed")
                                 close_ws = True
@@ -183,6 +213,10 @@ class Relay(object):
 
     def _on_message(self, ws, data):
 
+        # make sure we can parse data as a string below
+        if not isinstance(data, str):
+            data = str(data, self.def_enc)
+
         if data:
             idx = 0
             if data == CONNECT_MSG:
@@ -210,16 +244,8 @@ class Relay(object):
                 self.log(logging.DEBUG, "_on_message: send {} -> local socket".format(len(data)))
 
                 if self._multi_channel:
-                    # strip off the first byte
-                    raw_data = bytearray(data)
-                    idx = raw_data[0]
-                    del raw_data[0]
-                    data = raw_data
-
-                # py3 data of type string needs to be byte encoded
-                if isinstance(data, str) and sys.version_info[0] > 2:
-                    data = bytes(data, 'utf-8')
-                self.lsock[idx].send(data)
+                    s_data, idx = self._strip_index(data)
+                self.lsock[idx].send(s_data)
 
     def _on_error(self, ws, exception):
         self.log(logging.ERROR, "_on_error: {}".format(str(exception)))

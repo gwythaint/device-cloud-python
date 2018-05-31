@@ -32,6 +32,9 @@ proxy_host_desc = "\nProxy host address"
 proxy_port_desc = "\nProxy port"
 proxy_username_desc = "\nProxy username (Optional)"
 proxy_password_desc = "\nProxy password (Optional)"
+onprem_desc = "\nSet on-prem special conifguration? (default false) (Optional)"
+onprem_file_xfer_host_desc = "\nOn-prem set a different host for file transfer? (Optional)"
+onprem_file_xfer_port_desc = "\nOn-prem set a different port for file transfer (Optional)"
 
 negatives = ["false", "f", "no", "n"]
 positives = ["true", "t", "yes", "y"]
@@ -47,6 +50,8 @@ def generate():
     parser.add_argument("--proxy-port", type=int, help=proxy_port_desc)
     parser.add_argument("--proxy-username", help=proxy_username_desc)
     parser.add_argument("--proxy-password", help=proxy_password_desc)
+    parser.add_argument("--onprem-file-xfer-host", help=onprem_file_xfer_host_desc)
+    parser.add_argument("--onprem-file-xfer-port", help=onprem_file_xfer_port_desc)
 
     args = parser.parse_args(sys.argv[1:])
     file_name = ""
@@ -91,6 +96,12 @@ def generate():
                 config["proxy"]["username"] = args.proxy_username
             if args.proxy_password:
                 config["proxy"]["password"] = args.proxy_password
+
+        # On Prem config options
+        if (args.onprem_file_xfer_host):
+            config["cloud"]["file_xfer_host"] = args.onprem_file_xfer_host
+        if (args.onprem_file_xfer_port):
+            config["cloud"]["file_xfer_port"] = args.onprem_file_xfer_port
 
         if missing:
             print("Missing {}. Try again.".format(", ".join(missing)))
@@ -181,6 +192,19 @@ def generate():
             temp = input("# ").strip()
             if temp:
                 config["proxy"]["password"] = temp
+
+        print(onprem_desc)
+        temp = input("# ").strip()
+        if temp:
+            print(onprem_file_xfer_host_desc)
+            temp = input("# ").strip()
+            if temp:
+                config["cloud"]["file_xfer_host"] = temp
+
+            print(onprem_file_xfer_port_desc)
+            temp = input("# ").strip()
+            if temp:
+                config["cloud"]["file_xfer_port"] = temp
 
     if not os.path.splitext(file_name)[1]:
         file_name += ".cfg"

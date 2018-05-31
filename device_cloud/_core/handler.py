@@ -652,7 +652,17 @@ class Handler(object):
         status = constants.STATUS_SUCCESS
         self.logger.info("Downloading \"%s\"", file_xfer_obj.file_name)
         self.logger.info("File size \"%d\"", file_xfer_obj.file_size)
-        url = "https://{}/file/{}".format(self.config.cloud.host, file_xfer_obj.file_id)
+
+        # on prem solutions might not have port 443 for file xfer, so
+        # support a config option in iot-connect.cfg for xfer host and
+        # port.
+        host = self.config.cloud.host
+        if self.config.cloud.file_xfer_host:
+            host = self.config.cloud.file_xfer_host
+        if self.config.cloud.file_xfer_port:
+            host += ":" + str(self.config.cloud.file_xfer_port)
+
+        url = "https://{}/file/{}".format(host, file_xfer_obj.file_id)
         download_dir = os.path.dirname(file_xfer_obj.file_path)
         temp_file_name = "".join([random.choice("0123456789") for _ in range(10)])
         temp_file_name += ".part"

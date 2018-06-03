@@ -1,0 +1,2563 @@
+<!doctype html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+
+    <title>tr50 API documentation</title>
+    <meta name="description" content="Copyright (c) 2016-2017 Wind River Systems, Inc.
+
+Licensed under the Apache License, Version 2.0 (th..." />
+
+  <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
+  
+  <style type="text/css">
+  
+* {
+  box-sizing: border-box;
+}
+/*! normalize.css v1.1.1 | MIT License | git.io/normalize */
+
+/* ==========================================================================
+   HTML5 display definitions
+   ========================================================================== */
+
+/**
+ * Correct `block` display not defined in IE 6/7/8/9 and Firefox 3.
+ */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary {
+    display: block;
+}
+
+/**
+ * Correct `inline-block` display not defined in IE 6/7/8/9 and Firefox 3.
+ */
+
+audio,
+canvas,
+video {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+}
+
+/**
+ * Prevent modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+audio:not([controls]) {
+    display: none;
+    height: 0;
+}
+
+/**
+ * Address styling not present in IE 7/8/9, Firefox 3, and Safari 4.
+ * Known issue: no IE 6 support.
+ */
+
+[hidden] {
+    display: none;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+/**
+ * 1. Prevent system color scheme's background color being used in Firefox, IE,
+ *    and Opera.
+ * 2. Prevent system color scheme's text color being used in Firefox, IE, and
+ *    Opera.
+ * 3. Correct text resizing oddly in IE 6/7 when body `font-size` is set using
+ *    `em` units.
+ * 4. Prevent iOS text size adjust after orientation change, without disabling
+ *    user zoom.
+ */
+
+html {
+    background: #fff; /* 1 */
+    color: #000; /* 2 */
+    font-size: 100%; /* 3 */
+    -webkit-text-size-adjust: 100%; /* 4 */
+    -ms-text-size-adjust: 100%; /* 4 */
+}
+
+/**
+ * Address `font-family` inconsistency between `textarea` and other form
+ * elements.
+ */
+
+html,
+button,
+input,
+select,
+textarea {
+    font-family: sans-serif;
+}
+
+/**
+ * Address margins handled incorrectly in IE 6/7.
+ */
+
+body {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+/**
+ * Address `outline` inconsistency between Chrome and other browsers.
+ */
+
+a:focus {
+    outline: thin dotted;
+}
+
+/**
+ * Improve readability when focused and also mouse hovered in all browsers.
+ */
+
+a:active,
+a:hover {
+    outline: 0;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/**
+ * Address font sizes and margins set differently in IE 6/7.
+ * Address font sizes within `section` and `article` in Firefox 4+, Safari 5,
+ * and Chrome.
+ */
+
+h1 {
+    font-size: 2em;
+    margin: 0.67em 0;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin: 0.83em 0;
+}
+
+h3 {
+    font-size: 1.17em;
+    margin: 1em 0;
+}
+
+h4 {
+    font-size: 1em;
+    margin: 1.33em 0;
+}
+
+h5 {
+    font-size: 0.83em;
+    margin: 1.67em 0;
+}
+
+h6 {
+    font-size: 0.67em;
+    margin: 2.33em 0;
+}
+
+/**
+ * Address styling not present in IE 7/8/9, Safari 5, and Chrome.
+ */
+
+abbr[title] {
+    border-bottom: 1px dotted;
+}
+
+/**
+ * Address style set to `bolder` in Firefox 3+, Safari 4/5, and Chrome.
+ */
+
+b,
+strong {
+    font-weight: bold;
+}
+
+blockquote {
+    margin: 1em 40px;
+}
+
+/**
+ * Address styling not present in Safari 5 and Chrome.
+ */
+
+dfn {
+    font-style: italic;
+}
+
+/**
+ * Address differences between Firefox and other browsers.
+ * Known issue: no IE 6/7 normalization.
+ */
+
+hr {
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    height: 0;
+}
+
+/**
+ * Address styling not present in IE 6/7/8/9.
+ */
+
+mark {
+    background: #ff0;
+    color: #000;
+}
+
+/**
+ * Address margins set differently in IE 6/7.
+ */
+
+p,
+pre {
+    margin: 1em 0;
+}
+
+/**
+ * Correct font family set oddly in IE 6, Safari 4/5, and Chrome.
+ */
+
+code,
+kbd,
+pre,
+samp {
+    font-family: monospace, serif;
+    _font-family: 'courier new', monospace;
+    font-size: 1em;
+}
+
+/**
+ * Improve readability of pre-formatted text in all browsers.
+ */
+
+pre {
+    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/**
+ * Address CSS quotes not supported in IE 6/7.
+ */
+
+q {
+    quotes: none;
+}
+
+/**
+ * Address `quotes` property not supported in Safari 4.
+ */
+
+q:before,
+q:after {
+    content: '';
+    content: none;
+}
+
+/**
+ * Address inconsistent and variable font size in all browsers.
+ */
+
+small {
+    font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+/* ==========================================================================
+   Lists
+   ========================================================================== */
+
+/**
+ * Address margins set differently in IE 6/7.
+ */
+
+dl,
+menu,
+ol,
+ul {
+    margin: 1em 0;
+}
+
+dd {
+    margin: 0 0 0 40px;
+}
+
+/**
+ * Address paddings set differently in IE 6/7.
+ */
+
+menu,
+ol,
+ul {
+    padding: 0 0 0 40px;
+}
+
+/**
+ * Correct list images handled incorrectly in IE 7.
+ */
+
+nav ul,
+nav ol {
+    list-style: none;
+    list-style-image: none;
+}
+
+/* ==========================================================================
+   Embedded content
+   ========================================================================== */
+
+/**
+ * 1. Remove border when inside `a` element in IE 6/7/8/9 and Firefox 3.
+ * 2. Improve image quality when scaled in IE 7.
+ */
+
+img {
+    border: 0; /* 1 */
+    -ms-interpolation-mode: bicubic; /* 2 */
+}
+
+/**
+ * Correct overflow displayed oddly in IE 9.
+ */
+
+svg:not(:root) {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Figures
+   ========================================================================== */
+
+/**
+ * Address margin not present in IE 6/7/8/9, Safari 5, and Opera 11.
+ */
+
+figure {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/**
+ * Correct margin displayed oddly in IE 6/7.
+ */
+
+form {
+    margin: 0;
+}
+
+/**
+ * Define consistent border, margin, and padding.
+ */
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em;
+}
+
+/**
+ * 1. Correct color not being inherited in IE 6/7/8/9.
+ * 2. Correct text not wrapping in Firefox 3.
+ * 3. Correct alignment displayed oddly in IE 6/7.
+ */
+
+legend {
+    border: 0; /* 1 */
+    padding: 0;
+    white-space: normal; /* 2 */
+    *margin-left: -7px; /* 3 */
+}
+
+/**
+ * 1. Correct font size not being inherited in all browsers.
+ * 2. Address margins set differently in IE 6/7, Firefox 3+, Safari 5,
+ *    and Chrome.
+ * 3. Improve appearance and consistency in all browsers.
+ */
+
+button,
+input,
+select,
+textarea {
+    font-size: 100%; /* 1 */
+    margin: 0; /* 2 */
+    vertical-align: baseline; /* 3 */
+    *vertical-align: middle; /* 3 */
+}
+
+/**
+ * Address Firefox 3+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet.
+ */
+
+button,
+input {
+    line-height: normal;
+}
+
+/**
+ * Address inconsistent `text-transform` inheritance for `button` and `select`.
+ * All other form control elements do not inherit `text-transform` values.
+ * Correct `button` style inheritance in Chrome, Safari 5+, and IE 6+.
+ * Correct `select` style inheritance in Firefox 4+ and Opera.
+ */
+
+button,
+select {
+    text-transform: none;
+}
+
+/**
+ * 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+ *    and `video` controls.
+ * 2. Correct inability to style clickable `input` types in iOS.
+ * 3. Improve usability and consistency of cursor style between image-type
+ *    `input` and others.
+ * 4. Remove inner spacing in IE 7 without affecting normal text inputs.
+ *    Known issue: inner spacing remains in IE 6.
+ */
+
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+    -webkit-appearance: button; /* 2 */
+    cursor: pointer; /* 3 */
+    *overflow: visible;  /* 4 */
+}
+
+/**
+ * Re-set default cursor for disabled elements.
+ */
+
+button[disabled],
+html input[disabled] {
+    cursor: default;
+}
+
+/**
+ * 1. Address box sizing set to content-box in IE 8/9.
+ * 2. Remove excess padding in IE 8/9.
+ * 3. Remove excess padding in IE 7.
+ *    Known issue: excess padding remains in IE 6.
+ */
+
+input[type="checkbox"],
+input[type="radio"] {
+    box-sizing: border-box; /* 1 */
+    padding: 0; /* 2 */
+    *height: 13px; /* 3 */
+    *width: 13px; /* 3 */
+}
+
+/**
+ * 1. Address `appearance` set to `searchfield` in Safari 5 and Chrome.
+ * 2. Address `box-sizing` set to `border-box` in Safari 5 and Chrome
+ *    (include `-moz` to future-proof).
+ */
+
+input[type="search"] {
+    -webkit-appearance: textfield; /* 1 */
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box; /* 2 */
+    box-sizing: content-box;
+}
+
+/**
+ * Remove inner padding and search cancel button in Safari 5 and Chrome
+ * on OS X.
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/**
+ * Remove inner padding and border in Firefox 3+.
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/**
+ * 1. Remove default vertical scrollbar in IE 6/7/8/9.
+ * 2. Improve readability and alignment in all browsers.
+ */
+
+textarea {
+    overflow: auto; /* 1 */
+    vertical-align: top; /* 2 */
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+  </style>
+
+  <style type="text/css">
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+  body {
+    background: #fff;
+    font-family: "Source Sans Pro", "Helvetica Neueue", Helvetica, sans;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.6em;
+  }
+  #content {
+    width: 70%;
+    max-width: 850px;
+    float: left;
+    padding: 30px 60px;
+    border-left: 1px solid #ddd;
+  }
+  #sidebar {
+    width: 25%;
+    float: left;
+    padding: 30px;
+    overflow: hidden;
+  }
+  #nav {
+    font-size: 130%;
+    margin: 0 0 15px 0;
+  }
+
+  #top {
+    display: block;
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    font-size: .85em;
+    text-transform: uppercase;
+  }
+
+  #footer {
+    font-size: .75em;
+    padding: 5px 30px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+  }
+    #footer p {
+      margin: 0 0 0 30px;
+      display: inline-block;
+    }
+
+  h1, h2, h3, h4, h5 {
+    font-weight: 300;
+  }
+  h1 {
+    font-size: 2.5em;
+    line-height: 1.1em;
+    margin: 0 0 .50em 0;
+  }
+
+  h2 {
+    font-size: 1.75em;
+    margin: 1em 0 .50em 0;
+  }
+
+  h3 {
+    margin: 25px 0 10px 0;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: 105%;
+  }
+
+  a {
+    color: #058;
+    text-decoration: none;
+    transition: color .3s ease-in-out;
+  }
+
+  a:hover {
+    color: #e08524;
+    transition: color .3s ease-in-out;
+  }
+
+  pre, code, .mono, .name {
+    font-family: "Ubuntu Mono", "Cousine", "DejaVu Sans Mono", monospace;
+  }
+
+  .title .name {
+    font-weight: bold;
+  }
+  .section-title {
+    margin-top: 2em;
+  }
+  .ident {
+    color: #900;
+  }
+
+  code {
+    background: #f9f9f9;
+  } 
+
+  pre {
+    background: #fefefe;
+    border: 1px solid #ddd;
+    box-shadow: 2px 2px 0 #f3f3f3;
+    margin: 0 30px;
+    padding: 15px 30px;
+  }
+
+  .codehilite {
+    margin: 0 30px 10px 30px;
+  }
+
+    .codehilite pre {
+      margin: 0;
+    }
+    .codehilite .err { background: #ff3300; color: #fff !important; } 
+
+  table#module-list {
+    font-size: 110%;
+  }
+
+    table#module-list tr td:first-child {
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    table#module-list td {
+      vertical-align: top;
+      padding-bottom: 8px;
+    }
+
+      table#module-list td p {
+        margin: 0 0 7px 0;
+      }
+
+  .def {
+    display: table;
+  }
+
+    .def p {
+      display: table-cell;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .def p:first-child {
+      white-space: nowrap;
+    }
+
+    .def p:last-child {
+      width: 100%;
+    }
+
+
+  #index {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+    ul#index .class_name {
+      /* font-size: 110%; */
+      font-weight: bold;
+    }
+    #index ul {
+      margin: 0;
+    }
+
+  .item {
+    margin: 0 0 15px 0;
+  }
+
+    .item .class {
+      margin: 0 0 25px 30px;
+    }
+
+      .item .class ul.class_list {
+        margin: 0 0 20px 0;
+      }
+
+    .item .name {
+      background: #fafafa;
+      margin: 0;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 3px;
+      display: inline-block;
+      min-width: 40%;
+    }
+      .item .name:hover {
+        background: #f6f6f6;
+      }
+
+    .item .empty_desc {
+      margin: 0 0 5px 0;
+      padding: 0;
+    }
+
+    .item .inheritance {
+      margin: 3px 0 0 30px;
+    }
+
+    .item .inherited {
+      color: #666;
+    }
+
+    .item .desc {
+      padding: 0 8px;
+      margin: 0;
+    }
+
+      .item .desc p {
+        margin: 0 0 10px 0;
+      }
+
+    .source_cont {
+      margin: 0;
+      padding: 0;
+    }
+
+    .source_link a {
+      background: #ffc300;
+      font-weight: 400;
+      font-size: .75em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 1px 1px 0 #f4b700;
+      
+      padding: 3px 8px;
+      border-radius: 2px;
+      transition: background .3s ease-in-out;
+    }
+      .source_link a:hover {
+        background: #FF7200;
+        text-shadow: none;
+        transition: background .3s ease-in-out;
+      }
+
+    .source {
+      display: none;
+      max-height: 600px;
+      overflow-y: scroll;
+      margin-bottom: 15px;
+    }
+
+      .source .codehilite {
+        margin: 0;
+      }
+
+  .desc h1, .desc h2, .desc h3 {
+    font-size: 100% !important;
+  }
+  .clear {
+    clear: both;
+  }
+
+  @media all and (max-width: 950px) {
+    #sidebar {
+      width: 35%;
+    }
+    #content {
+      width: 65%;
+    }
+  }
+  @media all and (max-width: 650px) {
+    #top {
+      display: none;
+    }
+    #sidebar {
+      float: none;
+      width: auto;
+    }
+    #content {
+      float: none;
+      width: auto;
+      padding: 30px;
+    }
+
+    #index ul {
+      padding: 0;
+      margin-bottom: 15px;
+    }
+    #index ul li {
+      display: inline-block;
+      margin-right: 30px;
+    }
+    #footer {
+      text-align: left;
+    }
+    #footer p {
+      display: block;
+      margin: inherit;
+    }
+  }
+
+  /*****************************/
+
+  </style>
+
+
+  <style type="text/css">
+  
+/* ==========================================================================
+   EXAMPLE Media Queries for Responsive Design.
+   These examples override the primary ('mobile first') styles.
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+}
+
+@media print,
+       (-o-min-device-pixel-ratio: 5/4),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+
+/* ==========================================================================
+   Print styles.
+   Inlined to avoid required HTTP connection: h5bp.com/r
+   ========================================================================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster: h5bp.com/s */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links for images, or javascript/internal links
+     */
+
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group; /* h5bp.com/t */
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    @page {
+        margin: 0.5cm;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+  </style>
+
+  <script type="text/javascript">
+  function toggle(id, $link) {
+    $node = document.getElementById(id);
+    if (!$node)
+    return;
+    if (!$node.style.display || $node.style.display == 'none') {
+    $node.style.display = 'block';
+    $link.innerHTML = 'Hide source &nequiv;';
+    } else {
+    $node.style.display = 'none';
+    $link.innerHTML = 'Show source &equiv;';
+    }
+  }
+  </script>
+</head>
+<body>
+<a href="#" id="top">Top</a>
+
+<div id="container">
+    
+  
+  <div id="sidebar">
+    <h1>Index</h1>
+    <ul id="index">
+    <li class="set"><h3><a href="#header-variables">Module variables</a></h3>
+      
+  <ul>
+    <li class="mono"><a href="#tr50.CLOUD_ERROR_CODES">CLOUD_ERROR_CODES</a></li>
+  </ul>
+
+    </li>
+
+    <li class="set"><h3><a href="#header-functions">Functions</a></h3>
+      
+  <ul>
+    <li class="mono"><a href="#tr50.create_alarm_batch_item">create_alarm_batch_item</a></li>
+    <li class="mono"><a href="#tr50.create_alarm_publish">create_alarm_publish</a></li>
+    <li class="mono"><a href="#tr50.create_attribute_batch_item">create_attribute_batch_item</a></li>
+    <li class="mono"><a href="#tr50.create_attribute_current">create_attribute_current</a></li>
+    <li class="mono"><a href="#tr50.create_attribute_publish">create_attribute_publish</a></li>
+    <li class="mono"><a href="#tr50.create_diag_echo">create_diag_echo</a></li>
+    <li class="mono"><a href="#tr50.create_diag_ping">create_diag_ping</a></li>
+    <li class="mono"><a href="#tr50.create_diag_time">create_diag_time</a></li>
+    <li class="mono"><a href="#tr50.create_file_get">create_file_get</a></li>
+    <li class="mono"><a href="#tr50.create_file_put">create_file_put</a></li>
+    <li class="mono"><a href="#tr50.create_location_batch_item">create_location_batch_item</a></li>
+    <li class="mono"><a href="#tr50.create_location_publish">create_location_publish</a></li>
+    <li class="mono"><a href="#tr50.create_log_publish">create_log_publish</a></li>
+    <li class="mono"><a href="#tr50.create_mailbox_ack">create_mailbox_ack</a></li>
+    <li class="mono"><a href="#tr50.create_mailbox_check">create_mailbox_check</a></li>
+    <li class="mono"><a href="#tr50.create_mailbox_update">create_mailbox_update</a></li>
+    <li class="mono"><a href="#tr50.create_property_batch_item">create_property_batch_item</a></li>
+    <li class="mono"><a href="#tr50.create_property_get_current">create_property_get_current</a></li>
+    <li class="mono"><a href="#tr50.create_property_publish">create_property_publish</a></li>
+    <li class="mono"><a href="#tr50.create_thing_find">create_thing_find</a></li>
+    <li class="mono"><a href="#tr50.create_thing_update">create_thing_update</a></li>
+    <li class="mono"><a href="#tr50.generate_request">generate_request</a></li>
+    <li class="mono"><a href="#tr50.translate_error_code">translate_error_code</a></li>
+  </ul>
+
+    </li>
+
+    <li class="set"><h3><a href="#header-classes">Classes</a></h3>
+      <ul>
+        <li class="mono">
+        <span class="class_name"><a href="#tr50.TR50Command">TR50Command</a></span>
+        
+        </li>
+      </ul>
+    </li>
+
+    </ul>
+  </div>
+
+    <article id="content">
+      
+  
+
+  
+
+
+  <header id="section-intro">
+  <h1 class="title"><span class="name">tr50</span> module</h1>
+  <p>Copyright (c) 2016-2017 Wind River Systems, Inc.</p>
+<p>Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0</p>
+<p>Unless required by applicable law or agreed to in writing, software  distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.</p>
+  
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50', this);">Show source &equiv;</a></p>
+  <div id="source-tr50" class="source">
+    <pre><code>'''
+    Copyright (c) 2016-2017 Wind River Systems, Inc.
+    
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at:
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software  distributed
+    under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+    OR CONDITIONS OF ANY KIND, either express or implied.
+'''
+
+"""
+This module contains functions for generating TR50 messages relevent to the
+Client application
+"""
+
+import json
+
+from device_cloud._core import constants
+
+
+CLOUD_ERROR_CODES = {
+    constants.STATUS_SUCCESS:0,
+    constants.STATUS_INVOKED:constants.STATUS_INVOKED,
+    constants.STATUS_BAD_PARAMETER:constants.STATUS_BAD_PARAMETER,
+    constants.STATUS_BAD_REQUEST:constants.STATUS_BAD_REQUEST,
+    constants.STATUS_EXECUTION_ERROR:constants.STATUS_EXECUTION_ERROR,
+    constants.STATUS_EXISTS:constants.STATUS_EXISTS,
+    constants.STATUS_FILE_OPEN_FAILED:constants.STATUS_FILE_OPEN_FAILED,
+    constants.STATUS_FULL:constants.STATUS_FULL,
+    constants.STATUS_IO_ERROR:constants.STATUS_IO_ERROR,
+    constants.STATUS_NO_MEMORY:constants.STATUS_NO_MEMORY,
+    constants.STATUS_NO_PERMISSION:constants.STATUS_NO_PERMISSION,
+    constants.STATUS_NOT_EXECUTABLE:constants.STATUS_NOT_EXECUTABLE,
+    constants.STATUS_NOT_FOUND:constants.STATUS_NOT_FOUND,
+    constants.STATUS_NOT_INITIALIZED:constants.STATUS_NOT_INITIALIZED,
+    constants.STATUS_OUT_OF_RANGE:constants.STATUS_OUT_OF_RANGE,
+    constants.STATUS_PARSE_ERROR:constants.STATUS_PARSE_ERROR,
+    constants.STATUS_TIMED_OUT:constants.STATUS_TIMED_OUT,
+    constants.STATUS_TRY_AGAIN:constants.STATUS_TRY_AGAIN,
+    constants.STATUS_NOT_SUPPORTED:constants.STATUS_NOT_SUPPORTED,
+    constants.STATUS_FAILURE:constants.STATUS_FAILURE
+}
+
+
+class TR50Command(object):
+    """
+    Holds all relevant TR50 command names
+    """
+
+    alarm_publish = "alarm.publish"
+    alarm_batch = "alarm.batch"
+    attribute_current = "attribute.current"
+    attribute_publish = "attribute.publish"
+    attribute_batch = "attribute.batch"
+    diag_echo = "diag.echo"
+    diag_ping = "diag.ping"
+    diag_time = "diag.time"
+    file_get = "file.get"
+    file_put = "file.put"
+    location_publish = "location.publish"
+    location_batch = "location.batch"
+    log_publish = "log.publish"
+    mailbox_ack = "mailbox.ack"
+    mailbox_check = "mailbox.check"
+    mailbox_update = "mailbox.update"
+    property_publish = "property.publish"
+    property_batch = "property.batch"
+    property_current = "property.current"
+    thing_find = "thing.find"
+    thing_update = "thing.update"
+
+
+def _generate_params(kwargs):
+    """
+    Generate JSON based on the arguments passed to this function
+    """
+
+    params = {}
+    for key in kwargs:
+        if kwargs[key] != None:
+            params[key] = kwargs[key]
+    return params
+
+def create_alarm_publish(thing_key, key, state, message=None, timestamp=None,
+                         corr_id=None, latitude=None, longitude=None,
+                         republish=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing an alarm
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "state":state,
+        "msg":message,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "lat":latitude,
+        "lng":longitude,
+        "republish":republish
+    }
+    if batch:
+        cmd = {"command":TR50Command.alarm_batch}
+    else:
+        cmd = {"command":TR50Command.alarm_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_alarm_batch_item(key, state, timestamp=None, message=None, republish=False):
+    d = {
+        'key':key,
+        'state':state,
+        'ts':timestamp,
+        'msg':message,
+        'republish':republish
+    }
+    return d
+
+def create_attribute_current(thing_key, key, timestamp=None):
+    """
+    Generate a TR50 JSON request for getting an attribute's current value
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "ts":timestamp
+    }
+    cmd = {"command":TR50Command.attribute_current}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_attribute_publish(thing_key, key, value, timestamp=None,
+                             republish=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a string value
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "value":value,
+        "ts":timestamp,
+        "republish":republish
+    }
+    if batch:
+        cmd = {"command":TR50Command.attribute_batch}
+    else:
+        cmd = {"command":TR50Command.attribute_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_attribute_batch_item(key, value, timestamp=None,
+                             republish=None):
+    d = {
+        'key':key,
+        'value':value,
+        'ts':timestamp,
+        'republish':republish
+    }
+    return d
+
+def create_diag_echo(params):
+    """
+    Generate a TR50 JSON request for a diagnostic echo
+    """
+    cmd = {"command":TR50Command.diag_echo}
+    cmd["params"] = params
+    return cmd
+
+def create_diag_ping():
+    """
+    Generate a TR50 JSON request for a diagnostic ping
+    """
+    cmd = {"command":TR50Command.diag_ping}
+    return cmd
+
+def create_diag_time(params=None):
+    """
+    Generate a TR50 JSON request for a diagnostic time
+    """
+    cmd = {"command":TR50Command.diag_time}
+    cmd["params"] = params
+    return cmd
+
+def create_file_get(thing_key, file_name, file_global=False):
+    """
+    Generate a TR50 JSON request for getting a file from the Cloud
+    """
+    kwargs = {
+        "thingKey":thing_key,
+        "fileName":file_name,
+        "global":file_global
+    }
+    cmd = {"command":TR50Command.file_get}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_file_put(thing_key, file_name, public=False, crc32=None, tags=None,
+                    sec_tags=None, ttl=None, log_complete=None,
+                    file_global=False):
+    """
+    Generate a TR50 JSON request for putting a file in the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "fileName":file_name,
+        "public":public,
+        "crc32":crc32,
+        "tags":tags,
+        "secTags":sec_tags,
+        "ttl":ttl,
+        "logComplete":log_complete,
+        "global":file_global
+    }
+    cmd = {"command":TR50Command.file_put}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_location_publish(thing_key, latitude, longitude, heading=None,
+                            altitude=None, speed=None, fix_accuracy=None,
+                            fix_type=None, timestamp=None, corr_id=None,
+                            debounce=None, street_number=None, street=None,
+                            city=None, state=None, zip_code=None,
+                            country=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a location to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "lat":latitude,
+        "lng":longitude,
+        "heading":heading,
+        "altitude":altitude,
+        "speed":speed,
+        "fixAcc":fix_accuracy,
+        "fixType":fix_type,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "debounce":debounce,
+        "streetNumber":street_number,
+        "street":street,
+        "city":city,
+        "state":state,
+        "zipCode":zip_code,
+        "country":country
+    }
+    if batch:
+        cmd = {"command":TR50Command.location_batch}
+    else:
+        cmd = {"command":TR50Command.location_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_location_batch_item(latitude, longitude, heading=None,
+                            altitude=None, speed=None, fix_accuracy=None,
+                            fix_type=None, timestamp=None, corr_id=None,
+                            debounce=None, street_number=None, street=None,
+                            city=None, state=None, zip_code=None,
+                            country=None):
+    d = {
+        "lat":latitude,
+        "lng":longitude,
+        "heading":heading,
+        "altitude":altitude,
+        "speed":speed,
+        "fixAcc":fix_accuracy,
+        "fixType":fix_type,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "debounce":debounce,
+        "streetNumber":street_number,
+        "street":street,
+        "city":city,
+        "state":state,
+        "zipCode":zip_code,
+        "country":country
+    }
+    return d
+
+def create_log_publish(thing_key, message, timestamp=None, level=None,
+                       corr_id=None, global_log=None):
+    """
+    Generate a TR50 JSON request for publishing a log entry to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "msg":message,
+        "ts":timestamp,
+        "level":level,
+        "corrId":corr_id,
+        "global":global_log
+    }
+    cmd = {"command":TR50Command.log_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_mailbox_ack(mail_id, error_code=None, error_message=None,
+                       params=None):
+    """
+    Generate a TR50 JSON request for acknowledging the execution of an action
+    """
+
+    kwargs = {
+        "id":mail_id,
+        "errorCode":error_code,
+        "errorMessage":error_message,
+        "params":params
+    }
+    cmd = {"command":TR50Command.mailbox_ack}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_mailbox_check(auto_complete, limit=None):
+    """
+    Generate a TR50 JSON request for checking the mailbox in the Cloud
+    """
+
+    kwargs = {
+        "autoComplete":auto_complete,
+        "limit":limit
+    }
+    cmd = {"command":TR50Command.mailbox_check}
+    params = _generate_params(kwargs)
+    if params:
+        cmd["params"] = params
+    return cmd
+
+def create_mailbox_update(mail_id, message):
+    """
+    Generate a TR50 JSON request for updating a mailbox message
+    """
+
+    kwargs = {
+        "id":mail_id,
+        "msg":message
+    }
+    cmd = {"command":TR50Command.mailbox_update}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_property_publish(thing_key, key, value, timestamp=None, corr_id=None,
+                            aggregate=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a numeric value to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "value":value,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "aggregate":aggregate
+    }
+    if batch:
+        cmd = {"command":TR50Command.property_batch}
+    else:
+        cmd = {"command":TR50Command.property_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_property_batch_item(key, value, timestamp=None,
+                                corr_id=None, aggregate=False):
+    d = {
+            'key':key,
+            'value':value,
+            'ts':timestamp,
+            'corrId':corr_id,
+            'aggregate':aggregate
+    }
+    return d
+
+def create_property_get_current( thing_key, key, timestamp=None):
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "ts":timestamp
+    }
+    cmd = {"command":TR50Command.property_current}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+
+def create_thing_find(key):
+    """
+    Generate a TR50 JSON request for finding a different registered app
+    """
+
+    kwargs = {
+        "key":key
+    }
+    cmd = {"command":TR50Command.thing_find}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def create_thing_update(key, name, description, iccid, esn, imei,
+                        meid, imsi, unset=[]):
+    """
+    Generate a TR50 JSON request for updating a thing.
+    """
+    kwargs = {
+        "key":key,
+        "name":name,
+        "desc":description,
+        "iccid":iccid,
+        "esn":esn,
+        "imei":imei,
+        "meid":meid,
+        "imsi":imsi
+    }
+    if isinstance(unset, list):
+       if len(unset) > 0:
+           kwargs["unset"] = unset
+    cmd = {"command":TR50Command.thing_update}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+
+def generate_request(commands):
+    """
+    Generate a final TR50 request string out of multiple commands
+    """
+
+    request = {}
+
+    # Ensure we are working with a list
+    command_list = commands
+    if commands.__class__.__name__ != "list":
+        command_list = [commands]
+
+    # Add each command to the request
+    for num, val in enumerate(command_list):
+        request[str(num+1)] = val
+
+    return json.dumps(request, separators=(",", ":"))
+
+def translate_error_code(error_code):
+    """
+    Return the related Cloud error code for a given device error code
+    """
+
+    return (CLOUD_ERROR_CODES.get(error_code) if error_code in
+            CLOUD_ERROR_CODES else error_code)
+</code></pre>
+  </div>
+
+  </header>
+
+  <section id="section-items">
+    <h2 class="section-title" id="header-variables">Module variables</h2>
+      <div class="item">
+      <p id="tr50.CLOUD_ERROR_CODES" class="name">var <span class="ident">CLOUD_ERROR_CODES</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+
+    <h2 class="section-title" id="header-functions">Functions</h2>
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_alarm_batch_item">
+    <p>def <span class="ident">create_alarm_batch_item</span>(</p><p>key, state, timestamp=None, message=None, republish=False)</p>
+    </div>
+    
+
+    
+  
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_alarm_batch_item', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_alarm_batch_item" class="source">
+    <pre><code>def create_alarm_batch_item(key, state, timestamp=None, message=None, republish=False):
+    d = {
+        'key':key,
+        'state':state,
+        'ts':timestamp,
+        'msg':message,
+        'republish':republish
+    }
+    return d
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_alarm_publish">
+    <p>def <span class="ident">create_alarm_publish</span>(</p><p>thing_key, key, state, message=None, timestamp=None, corr_id=None, latitude=None, longitude=None, republish=None, batch=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for publishing an alarm</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_alarm_publish', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_alarm_publish" class="source">
+    <pre><code>def create_alarm_publish(thing_key, key, state, message=None, timestamp=None,
+                         corr_id=None, latitude=None, longitude=None,
+                         republish=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing an alarm
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "state":state,
+        "msg":message,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "lat":latitude,
+        "lng":longitude,
+        "republish":republish
+    }
+    if batch:
+        cmd = {"command":TR50Command.alarm_batch}
+    else:
+        cmd = {"command":TR50Command.alarm_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_attribute_batch_item">
+    <p>def <span class="ident">create_attribute_batch_item</span>(</p><p>key, value, timestamp=None, republish=None)</p>
+    </div>
+    
+
+    
+  
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_attribute_batch_item', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_attribute_batch_item" class="source">
+    <pre><code>def create_attribute_batch_item(key, value, timestamp=None,
+                             republish=None):
+    d = {
+        'key':key,
+        'value':value,
+        'ts':timestamp,
+        'republish':republish
+    }
+    return d
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_attribute_current">
+    <p>def <span class="ident">create_attribute_current</span>(</p><p>thing_key, key, timestamp=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for getting an attribute's current value</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_attribute_current', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_attribute_current" class="source">
+    <pre><code>def create_attribute_current(thing_key, key, timestamp=None):
+    """
+    Generate a TR50 JSON request for getting an attribute's current value
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "ts":timestamp
+    }
+    cmd = {"command":TR50Command.attribute_current}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_attribute_publish">
+    <p>def <span class="ident">create_attribute_publish</span>(</p><p>thing_key, key, value, timestamp=None, republish=None, batch=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for publishing a string value</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_attribute_publish', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_attribute_publish" class="source">
+    <pre><code>def create_attribute_publish(thing_key, key, value, timestamp=None,
+                             republish=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a string value
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "value":value,
+        "ts":timestamp,
+        "republish":republish
+    }
+    if batch:
+        cmd = {"command":TR50Command.attribute_batch}
+    else:
+        cmd = {"command":TR50Command.attribute_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_diag_echo">
+    <p>def <span class="ident">create_diag_echo</span>(</p><p>params)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for a diagnostic echo</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_diag_echo', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_diag_echo" class="source">
+    <pre><code>def create_diag_echo(params):
+    """
+    Generate a TR50 JSON request for a diagnostic echo
+    """
+    cmd = {"command":TR50Command.diag_echo}
+    cmd["params"] = params
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_diag_ping">
+    <p>def <span class="ident">create_diag_ping</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for a diagnostic ping</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_diag_ping', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_diag_ping" class="source">
+    <pre><code>def create_diag_ping():
+    """
+    Generate a TR50 JSON request for a diagnostic ping
+    """
+    cmd = {"command":TR50Command.diag_ping}
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_diag_time">
+    <p>def <span class="ident">create_diag_time</span>(</p><p>params=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for a diagnostic time</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_diag_time', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_diag_time" class="source">
+    <pre><code>def create_diag_time(params=None):
+    """
+    Generate a TR50 JSON request for a diagnostic time
+    """
+    cmd = {"command":TR50Command.diag_time}
+    cmd["params"] = params
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_file_get">
+    <p>def <span class="ident">create_file_get</span>(</p><p>thing_key, file_name, file_global=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for getting a file from the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_file_get', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_file_get" class="source">
+    <pre><code>def create_file_get(thing_key, file_name, file_global=False):
+    """
+    Generate a TR50 JSON request for getting a file from the Cloud
+    """
+    kwargs = {
+        "thingKey":thing_key,
+        "fileName":file_name,
+        "global":file_global
+    }
+    cmd = {"command":TR50Command.file_get}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_file_put">
+    <p>def <span class="ident">create_file_put</span>(</p><p>thing_key, file_name, public=False, crc32=None, tags=None, sec_tags=None, ttl=None, log_complete=None, file_global=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for putting a file in the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_file_put', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_file_put" class="source">
+    <pre><code>def create_file_put(thing_key, file_name, public=False, crc32=None, tags=None,
+                    sec_tags=None, ttl=None, log_complete=None,
+                    file_global=False):
+    """
+    Generate a TR50 JSON request for putting a file in the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "fileName":file_name,
+        "public":public,
+        "crc32":crc32,
+        "tags":tags,
+        "secTags":sec_tags,
+        "ttl":ttl,
+        "logComplete":log_complete,
+        "global":file_global
+    }
+    cmd = {"command":TR50Command.file_put}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_location_batch_item">
+    <p>def <span class="ident">create_location_batch_item</span>(</p><p>latitude, longitude, heading=None, altitude=None, speed=None, fix_accuracy=None, fix_type=None, timestamp=None, corr_id=None, debounce=None, street_number=None, street=None, city=None, state=None, zip_code=None, country=None)</p>
+    </div>
+    
+
+    
+  
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_location_batch_item', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_location_batch_item" class="source">
+    <pre><code>def create_location_batch_item(latitude, longitude, heading=None,
+                            altitude=None, speed=None, fix_accuracy=None,
+                            fix_type=None, timestamp=None, corr_id=None,
+                            debounce=None, street_number=None, street=None,
+                            city=None, state=None, zip_code=None,
+                            country=None):
+    d = {
+        "lat":latitude,
+        "lng":longitude,
+        "heading":heading,
+        "altitude":altitude,
+        "speed":speed,
+        "fixAcc":fix_accuracy,
+        "fixType":fix_type,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "debounce":debounce,
+        "streetNumber":street_number,
+        "street":street,
+        "city":city,
+        "state":state,
+        "zipCode":zip_code,
+        "country":country
+    }
+    return d
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_location_publish">
+    <p>def <span class="ident">create_location_publish</span>(</p><p>thing_key, latitude, longitude, heading=None, altitude=None, speed=None, fix_accuracy=None, fix_type=None, timestamp=None, corr_id=None, debounce=None, street_number=None, street=None, city=None, state=None, zip_code=None, country=None, batch=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for publishing a location to the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_location_publish', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_location_publish" class="source">
+    <pre><code>def create_location_publish(thing_key, latitude, longitude, heading=None,
+                            altitude=None, speed=None, fix_accuracy=None,
+                            fix_type=None, timestamp=None, corr_id=None,
+                            debounce=None, street_number=None, street=None,
+                            city=None, state=None, zip_code=None,
+                            country=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a location to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "lat":latitude,
+        "lng":longitude,
+        "heading":heading,
+        "altitude":altitude,
+        "speed":speed,
+        "fixAcc":fix_accuracy,
+        "fixType":fix_type,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "debounce":debounce,
+        "streetNumber":street_number,
+        "street":street,
+        "city":city,
+        "state":state,
+        "zipCode":zip_code,
+        "country":country
+    }
+    if batch:
+        cmd = {"command":TR50Command.location_batch}
+    else:
+        cmd = {"command":TR50Command.location_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_log_publish">
+    <p>def <span class="ident">create_log_publish</span>(</p><p>thing_key, message, timestamp=None, level=None, corr_id=None, global_log=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for publishing a log entry to the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_log_publish', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_log_publish" class="source">
+    <pre><code>def create_log_publish(thing_key, message, timestamp=None, level=None,
+                       corr_id=None, global_log=None):
+    """
+    Generate a TR50 JSON request for publishing a log entry to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "msg":message,
+        "ts":timestamp,
+        "level":level,
+        "corrId":corr_id,
+        "global":global_log
+    }
+    cmd = {"command":TR50Command.log_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_mailbox_ack">
+    <p>def <span class="ident">create_mailbox_ack</span>(</p><p>mail_id, error_code=None, error_message=None, params=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for acknowledging the execution of an action</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_mailbox_ack', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_mailbox_ack" class="source">
+    <pre><code>def create_mailbox_ack(mail_id, error_code=None, error_message=None,
+                       params=None):
+    """
+    Generate a TR50 JSON request for acknowledging the execution of an action
+    """
+
+    kwargs = {
+        "id":mail_id,
+        "errorCode":error_code,
+        "errorMessage":error_message,
+        "params":params
+    }
+    cmd = {"command":TR50Command.mailbox_ack}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_mailbox_check">
+    <p>def <span class="ident">create_mailbox_check</span>(</p><p>auto_complete, limit=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for checking the mailbox in the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_mailbox_check', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_mailbox_check" class="source">
+    <pre><code>def create_mailbox_check(auto_complete, limit=None):
+    """
+    Generate a TR50 JSON request for checking the mailbox in the Cloud
+    """
+
+    kwargs = {
+        "autoComplete":auto_complete,
+        "limit":limit
+    }
+    cmd = {"command":TR50Command.mailbox_check}
+    params = _generate_params(kwargs)
+    if params:
+        cmd["params"] = params
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_mailbox_update">
+    <p>def <span class="ident">create_mailbox_update</span>(</p><p>mail_id, message)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for updating a mailbox message</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_mailbox_update', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_mailbox_update" class="source">
+    <pre><code>def create_mailbox_update(mail_id, message):
+    """
+    Generate a TR50 JSON request for updating a mailbox message
+    """
+
+    kwargs = {
+        "id":mail_id,
+        "msg":message
+    }
+    cmd = {"command":TR50Command.mailbox_update}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_property_batch_item">
+    <p>def <span class="ident">create_property_batch_item</span>(</p><p>key, value, timestamp=None, corr_id=None, aggregate=False)</p>
+    </div>
+    
+
+    
+  
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_property_batch_item', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_property_batch_item" class="source">
+    <pre><code>def create_property_batch_item(key, value, timestamp=None,
+                                corr_id=None, aggregate=False):
+    d = {
+            'key':key,
+            'value':value,
+            'ts':timestamp,
+            'corrId':corr_id,
+            'aggregate':aggregate
+    }
+    return d
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_property_get_current">
+    <p>def <span class="ident">create_property_get_current</span>(</p><p>thing_key, key, timestamp=None)</p>
+    </div>
+    
+
+    
+  
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_property_get_current', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_property_get_current" class="source">
+    <pre><code>def create_property_get_current( thing_key, key, timestamp=None):
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "ts":timestamp
+    }
+    cmd = {"command":TR50Command.property_current}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_property_publish">
+    <p>def <span class="ident">create_property_publish</span>(</p><p>thing_key, key, value, timestamp=None, corr_id=None, aggregate=None, batch=False)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for publishing a numeric value to the Cloud</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_property_publish', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_property_publish" class="source">
+    <pre><code>def create_property_publish(thing_key, key, value, timestamp=None, corr_id=None,
+                            aggregate=None, batch=False):
+    """
+    Generate a TR50 JSON request for publishing a numeric value to the Cloud
+    """
+
+    kwargs = {
+        "thingKey":thing_key,
+        "key":key,
+        "value":value,
+        "ts":timestamp,
+        "corrId":corr_id,
+        "aggregate":aggregate
+    }
+    if batch:
+        cmd = {"command":TR50Command.property_batch}
+    else:
+        cmd = {"command":TR50Command.property_publish}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_thing_find">
+    <p>def <span class="ident">create_thing_find</span>(</p><p>key)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for finding a different registered app</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_thing_find', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_thing_find" class="source">
+    <pre><code>def create_thing_find(key):
+    """
+    Generate a TR50 JSON request for finding a different registered app
+    """
+
+    kwargs = {
+        "key":key
+    }
+    cmd = {"command":TR50Command.thing_find}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.create_thing_update">
+    <p>def <span class="ident">create_thing_update</span>(</p><p>key, name, description, iccid, esn, imei, meid, imsi, unset=[])</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a TR50 JSON request for updating a thing.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.create_thing_update', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.create_thing_update" class="source">
+    <pre><code>def create_thing_update(key, name, description, iccid, esn, imei,
+                        meid, imsi, unset=[]):
+    """
+    Generate a TR50 JSON request for updating a thing.
+    """
+    kwargs = {
+        "key":key,
+        "name":name,
+        "desc":description,
+        "iccid":iccid,
+        "esn":esn,
+        "imei":imei,
+        "meid":meid,
+        "imsi":imsi
+    }
+    if isinstance(unset, list):
+       if len(unset) > 0:
+           kwargs["unset"] = unset
+    cmd = {"command":TR50Command.thing_update}
+    cmd["params"] = _generate_params(kwargs)
+    return cmd
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.generate_request">
+    <p>def <span class="ident">generate_request</span>(</p><p>commands)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Generate a final TR50 request string out of multiple commands</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.generate_request', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.generate_request" class="source">
+    <pre><code>def generate_request(commands):
+    """
+    Generate a final TR50 request string out of multiple commands
+    """
+
+    request = {}
+
+    # Ensure we are working with a list
+    command_list = commands
+    if commands.__class__.__name__ != "list":
+        command_list = [commands]
+
+    # Add each command to the request
+    for num, val in enumerate(command_list):
+        request[str(num+1)] = val
+
+    return json.dumps(request, separators=(",", ":"))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+      
+  <div class="item">
+    <div class="name def" id="tr50.translate_error_code">
+    <p>def <span class="ident">translate_error_code</span>(</p><p>error_code)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return the related Cloud error code for a given device error code</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.translate_error_code', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.translate_error_code" class="source">
+    <pre><code>def translate_error_code(error_code):
+    """
+    Return the related Cloud error code for a given device error code
+    """
+
+    return (CLOUD_ERROR_CODES.get(error_code) if error_code in
+            CLOUD_ERROR_CODES else error_code)
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+
+    <h2 class="section-title" id="header-classes">Classes</h2>
+      
+      <div class="item">
+      <p id="tr50.TR50Command" class="name">class <span class="ident">TR50Command</span></p>
+      
+  
+    <div class="desc"><p>Holds all relevant TR50 command names</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-tr50.TR50Command', this);">Show source &equiv;</a></p>
+  <div id="source-tr50.TR50Command" class="source">
+    <pre><code>class TR50Command(object):
+    """
+    Holds all relevant TR50 command names
+    """
+
+    alarm_publish = "alarm.publish"
+    alarm_batch = "alarm.batch"
+    attribute_current = "attribute.current"
+    attribute_publish = "attribute.publish"
+    attribute_batch = "attribute.batch"
+    diag_echo = "diag.echo"
+    diag_ping = "diag.ping"
+    diag_time = "diag.time"
+    file_get = "file.get"
+    file_put = "file.put"
+    location_publish = "location.publish"
+    location_batch = "location.batch"
+    log_publish = "log.publish"
+    mailbox_ack = "mailbox.ack"
+    mailbox_check = "mailbox.check"
+    mailbox_update = "mailbox.update"
+    property_publish = "property.publish"
+    property_batch = "property.batch"
+    property_current = "property.current"
+    thing_find = "thing.find"
+    thing_update = "thing.update"
+</code></pre>
+  </div>
+</div>
+
+
+      <div class="class">
+          <h3>Ancestors (in MRO)</h3>
+          <ul class="class_list">
+          <li><a href="#tr50.TR50Command">TR50Command</a></li>
+          <li>builtins.object</li>
+          </ul>
+          <h3>Class variables</h3>
+            <div class="item">
+            <p id="tr50.TR50Command.alarm_batch" class="name">var <span class="ident">alarm_batch</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.alarm_publish" class="name">var <span class="ident">alarm_publish</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.attribute_batch" class="name">var <span class="ident">attribute_batch</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.attribute_current" class="name">var <span class="ident">attribute_current</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.attribute_publish" class="name">var <span class="ident">attribute_publish</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.diag_echo" class="name">var <span class="ident">diag_echo</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.diag_ping" class="name">var <span class="ident">diag_ping</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.diag_time" class="name">var <span class="ident">diag_time</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.file_get" class="name">var <span class="ident">file_get</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.file_put" class="name">var <span class="ident">file_put</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.location_batch" class="name">var <span class="ident">location_batch</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.location_publish" class="name">var <span class="ident">location_publish</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.log_publish" class="name">var <span class="ident">log_publish</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.mailbox_ack" class="name">var <span class="ident">mailbox_ack</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.mailbox_check" class="name">var <span class="ident">mailbox_check</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.mailbox_update" class="name">var <span class="ident">mailbox_update</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.property_batch" class="name">var <span class="ident">property_batch</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.property_current" class="name">var <span class="ident">property_current</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.property_publish" class="name">var <span class="ident">property_publish</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.thing_find" class="name">var <span class="ident">thing_find</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="tr50.TR50Command.thing_update" class="name">var <span class="ident">thing_update</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+      </div>
+      </div>
+
+  </section>
+
+    </article>
+  <div class="clear"> </div>
+  <footer id="footer">
+    <p>
+      Documentation generated by
+      <a href="https://github.com/BurntSushi/pdoc">pdoc 0.3.2</a>
+    </p>
+
+    <p>pdoc is in the public domain with the
+      <a href="http://unlicense.org">UNLICENSE</a></p>
+
+    <p>Design by <a href="http://nadh.in">Kailash Nadh</a></p>
+  </footer>
+</div>
+</body>
+</html>

@@ -48,7 +48,7 @@ running = True
 systemd_controlled = False
 
 default_cfg_dir = "."
-app_id = "device_manager_py"
+app_id = "hdc_device_manager_py"
 config_file = "iot-connect.cfg"
 
 def sighandler(signum, frame):

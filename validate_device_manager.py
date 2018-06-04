@@ -43,7 +43,7 @@ if sys.version_info.major == 2:
     input = raw_input
 
 app_file = "device_manager.py"
-client_id = "device_manager_py"
+client_id = "hdc_device_manager_py"
 cloud = ""
 validate_app = None
 pycommand = "python"

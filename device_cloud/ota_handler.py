@@ -97,6 +97,22 @@ class OTAHandler(object):
         return result
 
     ## Private Methods ##
+    def _scrub_file_name(self, client, fn):
+        """
+        Script used to sanitize a log file name for valid characters.
+        The file is uploaded to the cloud with the scrubbed name.
+        """
+        safe_string = ''
+        safe_special_chars = ['_', '.', '-']
+        override_char = '_'
+        for c in fn:
+            if c.isalnum() or c in safe_special_chars:
+                safe_string +=  c
+            else:
+                #override whatever non supported char to underscore
+                safe_string += override_char
+        return safe_string
+
     def _update_software(self, client, params, request):
         """
         Main method that will run in a new thread and perform all the software
@@ -106,6 +122,8 @@ class OTAHandler(object):
         status = iot.STATUS_BAD_PARAMETER
         update_data = None
         package_name = None
+
+        override_ota_logfile_name = None
 
         client.log(iot.LOGINFO, "Started OTA Update")
         client.event_publish("OTA: Started OTA Update")
@@ -121,6 +139,9 @@ class OTAHandler(object):
         if params:
             error_notified = False
             download_timeout = params.get("ota_timeout")
+            if params.get("ota_logfile"):
+                override_ota_logfile_name = self._scrub_file_name(client, params.get("ota_logfile"))
+                client.log(iot.LOGINFO, "Override OTA logfile name {}".format(override_ota_logfile_name))
 
             # 1. Download Package
             client.log(iot.LOGINFO, "Downloading Package...")
@@ -299,7 +320,11 @@ class OTAHandler(object):
                         client.log(iot.LOGINFO,"{}".format(line.rstrip()))
             client.log(iot.LOGINFO,"OTA STDOUT log dump complete.")
             ts = datetime.utcnow().strftime("%Y-%m-%d-%S")
-            output_file = "ota_install-{}.log".format(ts)
+            client.log(iot.LOGINFO,"override_ota_logfile_name {} \n\n".format(override_ota_logfile_name))
+            if override_ota_logfile_name is not '':
+                output_file = override_ota_logfile_name
+            else:
+                output_file = "ota_install-{}.log".format(ts)
             client.file_upload(stdout_log, upload_name=output_file,
                                 blocking=True, timeout=60, file_global=False),
 

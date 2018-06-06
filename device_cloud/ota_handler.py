@@ -136,8 +136,13 @@ class OTAHandler(object):
             client.log(iot.LOGINFO,"Clean up previous update artifacts...")
             shutil.rmtree(package_dir)
 
+        # get extra params
+        extra_params = params.get("extra_params")
+        client.log(iot.LOGINFO,"Extra parameters {}".format(extra_params))
+
         if params:
             error_notified = False
+
             download_timeout = params.get("ota_timeout")
             if params.get("ota_logfile"):
                 override_ota_logfile_name = self._scrub_file_name(client, params.get("ota_logfile"))
@@ -193,7 +198,7 @@ class OTAHandler(object):
                                          "Continuing.")
                 else:
                     status = self._execute(update_data['pre_install'], \
-                                           package_dir)
+                                           package_dir, extra_params)
             elif not error_notified:
                 error_notified = True
                 client.log(iot.LOGERROR, "Data Read Failed!")
@@ -210,7 +215,7 @@ class OTAHandler(object):
                 client.event_publish("OTA: Running Install...")
                 client.action_progress_update(request.request_id, "Running Install")
                 client.alarm_publish(ALARM_NAME, ALARM_INSTALL, message="package: {}".format(package_name))
-                status = self._execute(update_data['install'], package_dir)
+                status = self._execute(update_data['install'], package_dir, extra_params)
             elif not error_notified:
                 error_notified = True
                 client.log(iot.LOGERROR, "Pre-Install Failed!")
@@ -235,7 +240,7 @@ class OTAHandler(object):
                                          "Continuing.")
                 else:
                     status = self._execute(update_data['post_install'], \
-                                           package_dir)
+                                           package_dir, extra_params)
             elif not error_notified:
                 error_notified = True
                 client.log(iot.LOGERROR, "Install Failed!")
@@ -268,7 +273,7 @@ class OTAHandler(object):
                 client.event_publish("OTA: Running install error action!")
                 client.alarm_publish(ALARM_NAME, ALARM_INSTALL_ERROR, message="package: {}".format(package_name))
                 client.log(iot.LOGWARNING, "Running install error action!")
-                self._execute(update_data['error_action'], package_dir)
+                self._execute(update_data['error_action'], package_dir, extra_params)
 
             client.log(iot.LOGERROR, "OTA Failed!")
             client.event_publish("OTA: Update Failed!")
@@ -423,7 +428,7 @@ class OTAHandler(object):
 
         return (status, update_data)
 
-    def _execute(self, command, working_dir=None):
+    def _execute(self, command, working_dir=None, extra_params=None):
         """
         Runs a shell command, if not empty. If there is a working directory
         specified, the command is modified to use this directory.
@@ -441,6 +446,11 @@ class OTAHandler(object):
 
                 command = "cd {}{} {}".format(working_dir, cmd_sep, command)
             cmd = "{}{} {}".format(command, log_append, redir_output)
+
+            # export the extra params to an env var that the os.system
+            # cmd can exexute
+            if extra_params:
+                os.environ["HDC_EXTRA_PARAMS"] =  extra_params
             result = os.system(cmd)
             if result:
                 status = iot.STATUS_EXECUTION_ERROR

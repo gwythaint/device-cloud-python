@@ -1391,7 +1391,7 @@ class OTAExecute(unittest.TestCase):
         mock_system.return_value = 0
 
         self.ota = device_cloud.ota_handler.OTAHandler();
-        result = self.ota._execute(test_cmd)
+        result = self.ota._execute(test_cmd, extra_params="123")
 
         assert result == device_cloud.STATUS_SUCCESS
 
@@ -1407,7 +1407,7 @@ class OTAExecuteBadCommand(unittest.TestCase):
         mock_system.return_value = 127
 
         self.ota = device_cloud.ota_handler.OTAHandler();
-        result = self.ota._execute(test_cmd)
+        result = self.ota._execute(test_cmd, extra_params="123")
 
         assert result == device_cloud.STATUS_EXECUTION_ERROR
 
@@ -1423,7 +1423,7 @@ class OTAExecuteNoCommand(unittest.TestCase):
         mock_system.return_value = -1
 
         self.ota = device_cloud.ota_handler.OTAHandler();
-        result = self.ota._execute(test_cmd)
+        result = self.ota._execute(test_cmd, extra_params="123")
 
         assert result == device_cloud.STATUS_NOT_FOUND
         mock_system.assert_not_called()
@@ -1437,7 +1437,7 @@ class OTAExecuteBadWorkingDir(unittest.TestCase):
         test_cmd = "echo 'Hello'"
 
         self.ota = device_cloud.ota_handler.OTAHandler();
-        result = self.ota._execute(test_cmd, ".....not_a_real_dir.....")
+        result = self.ota._execute(test_cmd, ".....not_a_real_dir.....",  extra_params="123")
 
         assert result == device_cloud.STATUS_SUCCESS
 
@@ -1453,7 +1453,7 @@ class OTAExecuteWorkingDir(unittest.TestCase):
         mock_isdir.return_value = True
 
         self.ota = device_cloud.ota_handler.OTAHandler();
-        result = self.ota._execute("echo 'Hello'", "../")
+        result = self.ota._execute("echo 'Hello'", "../",  extra_params="123")
 
         full_cmd = mock_system.call_args[0][0]
         pat = re.compile("cd \\.\\.\\/(;|( &)) echo 'Hello'")

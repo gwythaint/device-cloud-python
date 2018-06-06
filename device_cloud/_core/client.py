@@ -162,9 +162,15 @@ class Client(object):
         if self.config.app_id and self.config.device_id:
             self.config.key = "{}-{}".format(self.config.device_id,
                                              self.config.app_id)
+
+        # for migration, customers may not want to use the app_id
+        elif not self.config.app_id and self.config.device_id:
+            print("No app_id specified, using device ID")
+            self.config.key = "{}".format(self.config.device_id)
+
         else:
-            print("app_id or device_id not set. Required for key.")
-            raise KeyError("app_id or device_id not set. Required for key.")
+            print("device_id not set. Required for key.")
+            raise KeyError("device_id not set. Required for key.")
 
         if len(self.config.key) > 64:
             print("Key exceeds 64 bytes. Please specify an app_id under {} "

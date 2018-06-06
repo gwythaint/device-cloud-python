@@ -999,7 +999,8 @@ class Handler(object):
                         tr50.create_property_batch_item(
                             pub.name,
                             pub.value,
-                            pub.timestamp ))
+                            pub.timestamp,
+                            corr_id=pub.corr_id))
 
                 # ------------------
                 # Location
@@ -1080,6 +1081,7 @@ class Handler(object):
                 command = tr50.create_property_publish(self.config.key,
                                                         "property_batch",
                                                         "Property Batch",
+                                                        corr_id=timestamp,
                                                         timestamp=timestamp,
                                                         batch=True)
                 message_desc = "Property Publish {}".format("property_batch")

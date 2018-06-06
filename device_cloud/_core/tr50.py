@@ -367,13 +367,12 @@ def create_property_publish(thing_key, key, value, timestamp=None, corr_id=None,
     return cmd
 
 def create_property_batch_item(key, value, timestamp=None,
-                                corr_id=None, aggregate=False):
+                                corr_id=None):
     d = {
             'key':key,
             'value':value,
             'ts':timestamp,
-            'corrId':corr_id,
-            'aggregate':aggregate
+            'corrid':corr_id
     }
     return d
 

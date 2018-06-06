@@ -402,12 +402,14 @@ class PublishTelemetry(Publish):
     Holds information about telemetry that is to be published
     """
 
-    def __init__(self, name, value, timestamp=None):
+    def __init__(self, name, value, timestamp=None, corr_id=None, aggregate=None):
         super(PublishTelemetry, self).__init__()
         if type(timestamp) is datetime:
             self.timestamp = timestamp.strftime(constants.TIME_FORMAT)
         self.name = name
         self.value = value
+        self.corr_id = corr_id
+        self.aggregate = aggregate
 
 
 class Work(object):

@@ -28,6 +28,7 @@ from device_cloud._core.constants import DEFAULT_THREAD_COUNT
 from device_cloud._core.constants import STATUS_SUCCESS
 from device_cloud._core.constants import WORK_PUBLISH
 from device_cloud._core.constants import STATUS_NOT_FOUND
+from device_cloud._core.constants import TIME_FORMAT
 from device_cloud._core import defs
 from device_cloud._core.handler import Handler
 from device_cloud.identity import Identity
@@ -86,6 +87,8 @@ class Client(object):
             self.config.update(kwargs)
 
         self.identity = Identity()
+
+        self.database = None
 
         # Add sleep for idle loop
         # default is 0.1
@@ -524,7 +527,8 @@ class Client(object):
                                         accuracy=accuracy, fix_type=fix_type)
         return self.handler.queue_publish(location)
 
-    def telemetry_publish(self, telemetry_name, value, cloud_response=False, timestamp=None):
+    def telemetry_publish(self, telemetry_name, value, cloud_response=False,
+             timestamp=None, corr_id=None, aggregate=False):
         """
         Publish telemetry to the Cloud
 
@@ -541,7 +545,7 @@ class Client(object):
           STATUS_SUCCESS             Telemetry has been queued for publishing
         """
 
-        telem = defs.PublishTelemetry(telemetry_name, value, timestamp)
+        telem = defs.PublishTelemetry(telemetry_name, value, timestamp, corr_id, aggregate)
         return self.handler.request_publish(telem, cloud_response)
 
     def telemetry_read_last_sample(self, telemetry_name):

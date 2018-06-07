@@ -245,7 +245,8 @@ class Relay(object):
 
                 if self._multi_channel:
                     s_data, idx = self._strip_index(data)
-                self.lsock[idx].send(s_data)
+                    data = s_data
+                self.lsock[idx].send(data)
 
     def _on_error(self, ws, exception):
         self.log(logging.ERROR, "_on_error: {}".format(str(exception)))

@@ -131,6 +131,17 @@ class Relay(object):
             d = chr(idx) + data
         return d
 
+    def _encode_data(self, d):
+        """
+        Python 3 has different encoding for streams, bytes vs
+        bytearray.  Need to encode for py3.  Py2 just return the data.
+        """
+        if sys.version_info[0] > 2:
+            raw_data = bytes(d, self.def_enc)
+        else:
+            raw_data = d
+        return raw_data
+
     def _strip_index(self, d):
         if sys.version_info[0] > 2:
             raw_data = bytes(d, self.def_enc)
@@ -246,7 +257,8 @@ class Relay(object):
                 if self._multi_channel:
                     s_data, idx = self._strip_index(data)
                     data = s_data
-                self.lsock[idx].send(data)
+                enc_data = self._encode_data(data)
+                self.lsock[idx].send(enc_data)
 
     def _on_error(self, ws, exception):
         self.log(logging.ERROR, "_on_error: {}".format(str(exception)))

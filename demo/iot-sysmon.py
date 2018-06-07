@@ -114,9 +114,9 @@ if __name__ == "__main__":
     client.action_register_callback("cpu_time", cpu_time)
 
     # Telemetry names (properties for numbers, attributes for strings)
-    properties = ["property-1"]
-    net_io_counters = ["property-2", "property-3", "property-4", "property-5", "property-6", "property-7","property-8", "property-9"]
-    disk_usage = ['property-10']
+    properties = ["cpu-1"]
+    net_io_counters = ["net_io-1", "net_io-2", "net_io-3", "net_io-4", "net_io-5", "net_io-6","net_io-7", "net_io-8"]
+    disk_usage = ['disk-1']
 
     # Connect to Cloud
     if client.connect(timeout=10) != iot.STATUS_SUCCESS:

@@ -270,8 +270,8 @@ class Relay(object):
     def _on_close(self, ws):
         self.log(logging.INFO,"_on_close: websocket closed")
         for s in self.lsocket_map.keys():
-            print ("Closing sock {}".format(self.lsocket_map[s]))
             if s:
+                self.log.debug("Closing sock {}".format(self.lsocket_map[s]))
                 s.close()
         self.lsocket_map = {}
         self.running = False
@@ -315,7 +315,7 @@ class Relay(object):
             self.thread.join()
             self.thread = None
         if self.ws_thread:
-            self.ws_thread.join()
+            # websocket client joins the thread
             self.ws_thread = None
 
 

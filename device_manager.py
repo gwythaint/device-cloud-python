@@ -456,6 +456,40 @@ def publish_platform_info(client, attr_file_dir=default_cfg_dir, attr_file_name=
             print("Error: while processing {}".format(attr_path))
             print("Error: {}".format(str(error)))
 
+def publish_remote_access_attr(client):
+    # -------------------------------------------------------
+    # Need to create a json object to publish e.g.:
+    # {"remote_access_support": [{"VNC":"5900"}, {"HTTP":"80"}]} Check
+    # to see if the configured service is listening.  If so, add it to
+    # the list. If the remote access list is empty, unset the
+    # attribute
+    # -------------------------------------------------------
+    config = config_load()
+    rem_acc_key = 'remote_access_support'
+    rem_acc_attr = {}
+    rem_acc_proto_list = []
+    rem_acc_count = 0
+    for i in config.remote_access_support:
+        d = {}
+        for k,v in iteritems(i._asdict()):
+            d[k] = v
+            if 'port' in k:
+                if check_listening_port(client, "localhost", int(i.port) ):
+                    rem_acc_proto_list.append(d)
+                    rem_acc_attr[rem_acc_key] = rem_acc_proto_list
+                    rem_acc_count += 1
+    if rem_acc_count:
+        remote_access_attribute = json.dumps(rem_acc_attr[rem_acc_key])
+        client.log(iot.LOGINFO, "Remote access support attribute: {}".format(remote_access_attribute))
+        client.attribute_publish(rem_acc_key, remote_access_attribute)
+    else:
+        client.attribute_publish(rem_acc_key, "")
+
+    p = {}
+    p["relay_version"] = relay.relay_version()
+    p["remote_access_attribute"] = remote_access_attribute
+    return (iot.STATUS_SUCCESS, "", p)
+
 def quit_me():
     """
     Callback for the "quit" method which exits the device manager app.
@@ -648,6 +682,8 @@ if __name__ == "__main__":
 
     action_register_conditional(client, "ping", sign_of_life, \
                                 config.actions_enabled.reset_agent)
+    action_register_conditional(client, "get_remote_access_info", publish_remote_access_attr, \
+                                True)
 
     # Connect to Cloud
     if client.connect(timeout=10) != iot.STATUS_SUCCESS:
@@ -659,32 +695,19 @@ if __name__ == "__main__":
     # Publish system details
     publish_platform_info(client, default_cfg_dir)
 
-    # -------------------------------------------------------
-    # Need to create a json object to publish e.g.:
-    # {"remote_access_support": [{"VNC":"5900"}, {"HTTP":"80"}]} Check
-    # to see if the configured service is listening.  If so, add it to
-    # the list. If the remote access list is empty, unset the
-    # attribute
-    # -------------------------------------------------------
-    rem_acc_key = 'remote_access_support'
-    rem_acc_attr = {}
-    rem_acc_proto_list = []
-    rem_acc_count = 0
-    for i in config.remote_access_support:
-        d = {}
-        for k,v in iteritems(i._asdict()):
-            d[k] = v
-            if 'port' in k:
-                if check_listening_port(client, "localhost", int(i.port) ):
-                    rem_acc_proto_list.append(d)
-                    rem_acc_attr[rem_acc_key] = rem_acc_proto_list
-                    rem_acc_count += 1
-    if rem_acc_count:
-        remote_access_attribute = json.dumps(rem_acc_attr[rem_acc_key])
-        client.log(iot.LOGINFO, "Remote access support attribute: {}".format(remote_access_attribute))
-        client.attribute_publish(rem_acc_key, remote_access_attribute)
-    else:
-        client.attribute_publish(rem_acc_key, "")
+    # publish remote access attribute
+    # support whether to scan for the service ports based on the
+    # iot.cfg value scan_services_ports_on_init.  The default is scan
+    scan_ports = True
+
+    client.log(iot.LOGINFO,"config.discover_services_on_init {}"\
+        .format(config.discover_services_on_init))
+    if hasattr(config, "discover_services_on_init") \
+        and not config.discover_services_on_init:
+        scan_ports = False
+
+    if scan_ports:
+        publish_remote_access_attr(client)
 
     if os.path.isfile(os.path.join(runtime_dir, ".otalock")):
         try:

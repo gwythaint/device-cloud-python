@@ -131,6 +131,17 @@ class Relay(object):
             d = chr(idx) + data
         return d
 
+    def _encode_data(self, d):
+        """
+        Python 3 has different encoding for streams, bytes vs
+        bytearray.  Need to encode for py3.  Py2 just return the data.
+        """
+        if sys.version_info[0] > 2:
+            raw_data = bytes(d, self.def_enc)
+        else:
+            raw_data = d
+        return raw_data
+
     def _strip_index(self, d):
         if sys.version_info[0] > 2:
             raw_data = bytes(d, self.def_enc)
@@ -245,7 +256,9 @@ class Relay(object):
 
                 if self._multi_channel:
                     s_data, idx = self._strip_index(data)
-                self.lsock[idx].send(s_data)
+                    data = s_data
+                enc_data = self._encode_data(data)
+                self.lsock[idx].send(enc_data)
 
     def _on_error(self, ws, exception):
         self.log(logging.ERROR, "_on_error: {}".format(str(exception)))
@@ -257,8 +270,8 @@ class Relay(object):
     def _on_close(self, ws):
         self.log(logging.INFO,"_on_close: websocket closed")
         for s in self.lsocket_map.keys():
-            print ("Closing sock {}".format(self.lsocket_map[s]))
             if s:
+                self.log.debug("Closing sock {}".format(self.lsocket_map[s]))
                 s.close()
         self.lsocket_map = {}
         self.running = False
@@ -302,7 +315,7 @@ class Relay(object):
             self.thread.join()
             self.thread = None
         if self.ws_thread:
-            self.ws_thread.join()
+            # websocket client joins the thread
             self.ws_thread = None
 
 
